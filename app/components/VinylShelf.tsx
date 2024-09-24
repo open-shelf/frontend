@@ -1,11 +1,13 @@
 import React from "react";
 import { motion } from "framer-motion";
+import Image from "next/image";
+import vinyl from "./vinyls/v2.webp";
 
 const vinyls = [
-  { id: 1, image: "/album1.jpg", title: "Album One" },
-  { id: 2, image: "/album2.jpg", title: "Album Two" },
-  { id: 3, image: "/album3.jpg", title: "Album Three" },
-  { id: 4, image: "/album4.jpg", title: "Album Four" },
+  { id: 1, image: vinyl, title: "Album One" },
+  { id: 2, image: vinyl, title: "Album Two" },
+  { id: 3, image: vinyl, title: "Album Three" },
+  { id: 4, image: vinyl, title: "More Three" },
 ];
 
 const VinylShelf: React.FC = () => {
@@ -17,11 +19,14 @@ const VinylShelf: React.FC = () => {
           className="w-32 h-32 rounded-full bg-gray-300 shadow-md relative flex items-center justify-center"
           whileHover={{ scale: 1.1 }}
         >
-          <img
-            src={vinyl.image}
-            alt={vinyl.title}
-            className="w-full h-full object-cover rounded-full"
-          />
+          <div className="relative w-full h-full">
+            <Image
+              src={vinyl.image}
+              alt={vinyl.title}
+              style={{ objectFit: "cover" }}
+              quality={100}
+            />
+          </div>
         </motion.div>
       ))}
     </div>

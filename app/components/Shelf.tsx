@@ -18,15 +18,20 @@ const Shelf: React.FC<ShelfProps> = ({
 }) => {
   return (
     <motion.div
-      className={`absolute inset-0 ${bgColor} rounded flex items-center justify-center`}
+      className={`absolute inset-0 ${bgColor} rounded flex items-center justify-center overflow-hidden p-4`}
       style={{
         top: position,
-        height: "33.33%",
+        height: "50%",
         scale,
         translateY,
+        boxShadow:
+          "inset 0 0 0 2px rgba(255, 255, 255, 0.1), inset 0 0 10px rgba(0, 0, 0, 0.1)",
       }}
     >
-      {children}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black opacity-10"></div>
+      <div className="relative w-full h-full flex items-center justify-center">
+        {children}
+      </div>
     </motion.div>
   );
 };

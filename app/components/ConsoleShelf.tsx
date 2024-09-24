@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 const consoles = [
   { id: 1, image: "/console1.png", name: "PlayStation 5" },
   { id: 2, image: "/console2.png", name: "Xbox Series X" },
-  { id: 3, image: "/console3.png", name: "Nintendo Switch" },
 ];
 
 const ConsoleShelf: React.FC = () => {

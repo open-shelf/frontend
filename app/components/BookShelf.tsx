@@ -1,11 +1,24 @@
 import React from "react";
 import { motion } from "framer-motion";
+import Image from "next/image";
+import bonfireImg from "./books/bonfire.jpeg";
+import silverImg from "./books/silver lake.jpg";
+import tisch from "./books/tisch.jpg";
+import dogImg from "./books/Doggo.jpg";
 
 const books = [
-  { id: 1, name: "The Great Gatsby" },
-  { id: 2, name: "1984" },
-  { id: 3, name: "To Kill a Mockingbird" },
-  { id: 4, name: "The Catcher in the Rye" },
+  { id: 1, name: "Bonfire", image: bonfireImg },
+  { id: 2, name: "By the Silver Lake", image: silverImg },
+  {
+    id: 3,
+    name: "Tisch",
+    image: tisch,
+  },
+  {
+    id: 4,
+    name: "The Dog",
+    image: dogImg,
+  },
 ];
 
 const BookShelf: React.FC = () => {
@@ -14,12 +27,26 @@ const BookShelf: React.FC = () => {
       {books.map((book) => (
         <motion.div
           key={book.id}
-          className="w-24 h-36 bg-gray-300 flex items-center justify-center shadow-md rounded"
+          className="w-24 h-36 bg-gray-300 flex items-center justify-center shadow-md rounded overflow-hidden"
           whileHover={{ scale: 1.1 }}
         >
-          <span className="text-center text-sm font-bold">{book.name}</span>
+          <div className="relative w-full h-full">
+            <Image
+              src={book.image}
+              alt={book.name}
+              layout="fill"
+              objectFit="cover"
+              quality={80}
+            />
+          </div>
         </motion.div>
       ))}
+      <motion.button
+        className="w-24 h-36 bg-gray-300 flex items-center justify-center shadow-md rounded"
+        whileHover={{ scale: 1.1 }}
+      >
+        More
+      </motion.button>
     </div>
   );
 };

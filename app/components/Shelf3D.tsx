@@ -85,7 +85,7 @@ const Shelf3D: React.FC = () => {
       <div className="sticky top-0 h-screen flex items-center justify-center overflow-hidden">
         {/* Header Text */}
         <motion.div
-          className="text-6xl font-extrabold text-white absolute z-10"
+          className="text-6xl font-extrabold text-black absolute z-10"
           style={{
             opacity: useTransform(scrollYProgress, [0, 0.05], [1, 0]),
             left: "15%",
@@ -101,7 +101,7 @@ const Shelf3D: React.FC = () => {
 
         {/* Main White Box */}
         <motion.div
-          className="w-[33%] aspect-square bg-white rounded-lg shadow-lg flex flex-col justify-between p-4 relative origin-top"
+          className="w-[33%] aspect-square  rounded-lg flex flex-col justify-between p-4 relative origin-top"
           style={{
             scale: whiteBoxScale,
             x: whiteBoxX,

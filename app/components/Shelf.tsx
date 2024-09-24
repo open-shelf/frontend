@@ -33,11 +33,12 @@ const Shelf: React.FC<ShelfProps> = ({
           className="absolute bottom-0 left-0 right-0"
           style={{
             height: "20px",
-            background:
-              "linear-gradient(to bottom, rgba(255,255,255,0.1), rgba(0,0,0,0.1))",
+            background: "white",
             transform: "rotateX(60deg)",
             transformOrigin: "bottom",
             boxShadow: "0 10px 20px rgba(0,0,0,0.1)",
+            borderRadius: "10px", // Added rounded corners
+            overflow: "hidden", // Ensure the content doesn't overflow the rounded corners
           }}
         ></div>
         {/* Children (objects on the shelf) */}

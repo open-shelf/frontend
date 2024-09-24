@@ -101,7 +101,7 @@ const Shelf3D: React.FC = () => {
 
         {/* Main White Box */}
         <motion.div
-          className="w-[33%] aspect-square bg-white rounded-lg shadow-lg flex flex-col justify-around p-4 relative origin-top"
+          className="w-[33%] aspect-square bg-white rounded-lg shadow-lg flex flex-col justify-between p-4 relative origin-top"
           style={{
             scale: whiteBoxScale,
             x: whiteBoxX,
@@ -118,9 +118,10 @@ const Shelf3D: React.FC = () => {
             scale={shelf1Scale}
             translateY={shelf1TranslateY}
             bgColor="bg-gray-100"
-            position="0%"
+            position="5%"
+            height="28%" // Reduced height
           >
-            <BookShelf /> {/* Custom BookShelf component */}
+            <BookShelf />
           </Shelf>
 
           {/* Shelf 2 */}
@@ -128,9 +129,10 @@ const Shelf3D: React.FC = () => {
             scale={shelf2Scale}
             translateY={shelf2TranslateY}
             bgColor="bg-gray-200"
-            position="33.33%"
+            position="36%" // Adjusted position
+            height="28%" // Reduced height
           >
-            <VinylShelf /> {/* Custom VinylShelf component */}
+            <VinylShelf />
           </Shelf>
 
           {/* Shelf 3 */}
@@ -138,9 +140,10 @@ const Shelf3D: React.FC = () => {
             scale={shelf3Scale}
             translateY={shelf3TranslateY}
             bgColor="bg-gray-300"
-            position="66.66%"
+            position="67%" // Adjusted position
+            height="28%" // Reduced height
           >
-            <ConsoleShelf /> {/* Custom ConsoleShelf component */}
+            <ConsoleShelf />
           </Shelf>
         </motion.div>
       </div>

@@ -23,7 +23,9 @@ const books = [
 
 const BookShelf: React.FC = () => {
   return (
-    <div className="w-full h-full flex flex-wrap gap-4 justify-center items-center">
+    <div className="w-full h-full flex flex-wrap gap-4 justify-center items-center pb-6">
+      {" "}
+      {/* Changed pt-8 to pb-8 for bottom padding */}
       {books.map((book) => (
         <motion.div
           key={book.id}
@@ -42,7 +44,7 @@ const BookShelf: React.FC = () => {
         </motion.div>
       ))}
       <motion.button
-        className="w-24 h-36 bg-gray-300 flex items-center justify-center shadow-md rounded"
+        className="w-24 h-36 bg-gray-300 flex items-center justify-center shadow-md rounded pb-6"
         whileHover={{ scale: 1.1 }}
       >
         More

@@ -8,7 +8,7 @@ const consoles = [
 
 const ConsoleShelf: React.FC = () => {
   return (
-    <div className="w-full h-full flex flex-wrap gap-4 justify-center items-center">
+    <div className="w-full h-full flex flex-wrap gap-4 justify-center items-center pt-7">
       {consoles.map((console) => (
         <motion.div
           key={console.id}

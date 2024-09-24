@@ -12,7 +12,7 @@ const vinyls = [
 
 const VinylShelf: React.FC = () => {
   return (
-    <div className="w-full h-full flex flex-wrap gap-4 justify-center items-center">
+    <div className="w-full h-full flex flex-wrap gap-4 justify-center items-center pb-1">
       {vinyls.map((vinyl) => (
         <motion.div
           key={vinyl.id}

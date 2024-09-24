@@ -117,9 +117,8 @@ const Shelf3D: React.FC = () => {
           <Shelf
             scale={shelf1Scale}
             translateY={shelf1TranslateY}
-            bgColor="bg-gray-100"
             position="5%"
-            height="28%" // Reduced height
+            height="28%"
           >
             <BookShelf />
           </Shelf>
@@ -128,9 +127,8 @@ const Shelf3D: React.FC = () => {
           <Shelf
             scale={shelf2Scale}
             translateY={shelf2TranslateY}
-            bgColor="bg-gray-200"
-            position="36%" // Adjusted position
-            height="28%" // Reduced height
+            position="36%"
+            height="28%"
           >
             <VinylShelf />
           </Shelf>
@@ -139,9 +137,8 @@ const Shelf3D: React.FC = () => {
           <Shelf
             scale={shelf3Scale}
             translateY={shelf3TranslateY}
-            bgColor="bg-gray-300"
-            position="67%" // Adjusted position
-            height="28%" // Reduced height
+            position="67%"
+            height="28%"
           >
             <ConsoleShelf />
           </Shelf>

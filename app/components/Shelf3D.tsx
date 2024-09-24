@@ -85,11 +85,18 @@ const Shelf3D: React.FC = () => {
       <div className="sticky top-0 h-screen flex items-center justify-center overflow-hidden">
         {/* Header Text */}
         <motion.div
-          className="text-6xl font-extrabold text-white absolute left-8 z-10"
-          style={{ opacity: useTransform(scrollYProgress, [0, 0.1], [1, 0]) }}
+          className="text-6xl font-extrabold text-white absolute z-10"
+          style={{
+            opacity: useTransform(scrollYProgress, [0, 0.05], [1, 0]),
+            left: "15%",
+            top: "50%",
+            transform: "translateY(-50%)",
+          }}
         >
           OpenShelf
-          <div className="text-2xl font-bold">Your Digital Library</div>
+          <div className="text-2xl font-bold">
+            Do what you like, Stake what you love!
+          </div>
         </motion.div>
 
         {/* Main White Box */}
@@ -100,7 +107,7 @@ const Shelf3D: React.FC = () => {
             x: whiteBoxX,
             y: whiteBoxY,
             opacity: whiteBoxOpacity,
-            rotateY: useTransform(scrollYProgress, [0, 0.1], [20, 0]),
+            rotateY: useTransform(scrollYProgress, [0, 0.5], [20, 0]),
             transformStyle: "preserve-3d",
             perspective: "1000px",
             translateY: whiteBoxScrollY,

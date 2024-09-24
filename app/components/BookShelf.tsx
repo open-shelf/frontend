@@ -24,12 +24,10 @@ const books = [
 const BookShelf: React.FC = () => {
   return (
     <div className="w-full h-full flex flex-wrap gap-4 justify-center items-center pb-6">
-      {" "}
-      {/* Changed pt-8 to pb-8 for bottom padding */}
       {books.map((book) => (
         <motion.div
           key={book.id}
-          className="w-24 h-36 bg-gray-300 flex items-center justify-center shadow-md rounded overflow-hidden"
+          className="w-24 h-36 bg-gray-300 flex items-center justify-center shadow-md rounded overflow-hidden relative"
           whileHover={{ scale: 1.1 }}
         >
           <div className="relative w-full h-full">
@@ -40,6 +38,7 @@ const BookShelf: React.FC = () => {
               objectFit="cover"
               quality={80}
             />
+            <div className="absolute inset-0 vignette-effect"></div>
           </div>
         </motion.div>
       ))}

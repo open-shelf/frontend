@@ -27,3 +27,25 @@ body {
   perspective: 1000px;
   transform-style: preserve-3d;
 }
+
+.vignette-effect {
+  pointer-events: none;
+  background: radial-gradient(
+    circle,
+    transparent 10%,
+    rgba(0, 0, 0, 0.3) 150%
+  );
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 3s linear infinite;
+}

@@ -6,12 +6,6 @@ const books = [
   { title: "To Kill a Mockingbird", author: "Harper Lee" },
   { title: "Pride and Prejudice", author: "Jane Austen" },
   { title: "The Great Gatsby", author: "F. Scott Fitzgerald" },
-  { title: "Moby Dick", author: "Herman Melville" },
-  { title: "War and Peace", author: "Leo Tolstoy" },
-  { title: "The Catcher in the Rye", author: "J.D. Salinger" },
-  { title: "The Lord of the Rings", author: "J.R.R. Tolkien" },
-  { title: "Harry Potter and the Sorcerer's Stone", author: "J.K. Rowling" },
-  { title: "The Hitchhiker's Guide to the Galaxy", author: "Douglas Adams" },
 ];
 
 export default function MyBookLibrary() {

@@ -2,15 +2,12 @@ import { ChevronRight } from "lucide-react";
 import Book from "./Book";
 
 const genres = [
-  { title: "Ficção Científica", author: "150 livros" },
-  { title: "Romance", author: "200 livros" },
-  { title: "Terror e Suspense", author: "120 livros" },
-  { title: "Autoajuda", author: "80 livros" },
-  { title: "Infantojuvenil", author: "100 livros" },
-  { title: "Literatura Brasileira", author: "90 livros" },
-  { title: "Espiritualidade", author: "70 livros" },
-  { title: "HQs e Mangás", author: "110 livros" },
-  { title: "Gastronomia", author: "60 livros" },
+  { title: "Moby Dick", author: "Herman Melville" },
+  { title: "War and Peace", author: "Leo Tolstoy" },
+  { title: "The Catcher in the Rye", author: "J.D. Salinger" },
+  { title: "The Lord of the Rings", author: "J.R.R. Tolkien" },
+  { title: "Harry Potter and the Sorcerer's Stone", author: "J.K. Rowling" },
+  { title: "The Hitchhiker's Guide to the Galaxy", author: "Douglas Adams" },
 ];
 
 export default function StoreBook() {

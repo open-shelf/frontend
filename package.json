@@ -17,6 +17,7 @@
     "pdfjs-dist": "^4.6.82",
     "react": "^18",
     "react-dom": "^18",
+    "react-pdf": "^9.1.1",
     "three": "^0.168.0"
   },
   "devDependencies": {

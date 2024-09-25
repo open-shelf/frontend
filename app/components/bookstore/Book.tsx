@@ -2,12 +2,18 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { useState } from "react";
+import BookDetailsPopup from "./BookDetailsPopup";
 
 interface BookProps {
   title: string;
   author: string;
   isRounded?: boolean;
   image?: string;
+  description?: string;
+  publishedDate?: string;
+  genre?: string;
+  pdfUrl?: string;
 }
 
 export default function Book({
@@ -15,15 +21,28 @@ export default function Book({
   author,
   isRounded = false,
   image,
+  description,
+  publishedDate,
+  genre,
+  pdfUrl,
 }: BookProps) {
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+
+  const handleBookClick = () => {
+    setIsPopupOpen(true);
+  };
+
+  const handleClosePopup = () => {
+    setIsPopupOpen(false);
+  };
+
   return (
     <div className="p-2">
-      {" "}
-      {/* Add padding to the outer container */}
       <motion.div
-        className="flex flex-col items-center flex-shrink-0"
+        className="flex flex-col items-center flex-shrink-0 cursor-pointer"
         whileHover={{ scale: 1.1 }}
         transition={{ duration: 0.2 }}
+        onClick={handleBookClick}
       >
         <div
           className={`relative w-32 h-48 mb-2 bg-primary shadow-md overflow-hidden bg-white ${
@@ -47,6 +66,19 @@ export default function Book({
           {title}
         </span>
       </motion.div>
+
+      {isPopupOpen && (
+        <BookDetailsPopup
+          title={title}
+          author={author}
+          image={image}
+          description={description}
+          publishedDate={publishedDate}
+          genre={genre}
+          pdfUrl={pdfUrl}
+          onClose={handleClosePopup}
+        />
+      )}
     </div>
   );
 }

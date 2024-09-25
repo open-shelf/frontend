@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import styles from "./pdf-viewer.module.css";
+import next from "next";
 
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 // Add pdfUrl as a prop to the component
 const PDFViewer = ({ pdfUrl }: { pdfUrl: string }) => {
@@ -151,7 +152,7 @@ const PDFViewer = ({ pdfUrl }: { pdfUrl: string }) => {
   useEffect(() => {
     const checkPdfUrl = async () => {
       try {
-        const response = await fetch(pdfUrl, { method: "HEAD" });
+        const response = await fetch(pdfUrl, { method: "GET" });
         if (!response.ok) {
           throw new Error("PDF not found");
         }

@@ -1,11 +1,14 @@
-import { useRouter } from "next/router";
+"use client";
+
+import { useSearchParams } from "next/navigation";
 import PDFViewer from "../components/bookstore/pdf-viewer";
 
 const ReaderPage = () => {
-  const router = useRouter();
-  const { url, title } = router.query;
+  const searchParams = useSearchParams();
+  const url = searchParams.get("url");
+  const title = searchParams.get("title");
 
-  if (!url || typeof url !== "string") {
+  if (!url) {
     return <div>No PDF URL provided</div>;
   }
 
@@ -14,7 +17,7 @@ const ReaderPage = () => {
       <header className="bg-primary text-white p-4">
         <h1 className="text-2xl">{title || "PDF Reader"}</h1>
         <button
-          onClick={() => router.back()}
+          onClick={() => window.history.back()}
           className="mt-2 text-sm underline"
         >
           Back to Bookstore

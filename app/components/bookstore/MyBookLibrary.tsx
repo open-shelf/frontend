@@ -9,7 +9,7 @@ const books = [
     publishedDate: "1949-06-08",
     genre: "Dystopian Fiction",
     image: "/images/1984.jpg",
-    pdfUrl: "https://example.com/1984.pdf",
+    pdfUrl: "http://localhost:8000/pdf/test.pdf",
   },
   {
     title: "To Kill a Mockingbird",
@@ -19,7 +19,7 @@ const books = [
     publishedDate: "1960-07-11",
     genre: "Southern Gothic",
     image: "/images/to-kill-a-mockingbird.jpg",
-    pdfUrl: "https://example.com/to-kill-a-mockingbird.pdf",
+    pdfUrl: "http://localhost:8000/pdf/test.pdf",
   },
   {
     title: "Pride and Prejudice",
@@ -28,7 +28,7 @@ const books = [
     publishedDate: "1813-01-28",
     genre: "Classic Romance",
     image: "/images/pride-and-prejudice.jpg",
-    pdfUrl: "https://example.com/pride-and-prejudice.pdf",
+    pdfUrl: "http://localhost:8000/pdf/test.pdf",
   },
   {
     title: "The Great Gatsby",
@@ -38,7 +38,7 @@ const books = [
     publishedDate: "1925-04-10",
     genre: "American Literature",
     image: "/images/great-gatsby.jpg",
-    pdfUrl: "https://example.com/great-gatsby.pdf",
+    pdfUrl: "http://localhost:8000/pdf/test.pdf",
   },
 ];
 

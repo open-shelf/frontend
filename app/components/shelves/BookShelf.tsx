@@ -1,10 +1,11 @@
 import React from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import bonfireImg from "./books/bonfire.jpeg";
-import silverImg from "./books/silver lake.jpg";
-import tisch from "./books/tisch.jpg";
-import dogImg from "./books/Doggo.jpg";
+import Link from "next/link";
+import bonfireImg from "./shelf_content/books/bonfire.jpeg";
+import silverImg from "./shelf_content//books/silver lake.jpg";
+import tisch from "./shelf_content/books/tisch.jpg";
+import dogImg from "./shelf_content/books/Doggo.jpg";
 
 const books = [
   { id: 1, name: "Bonfire", image: bonfireImg },
@@ -42,12 +43,21 @@ const BookShelf: React.FC = () => {
           </div>
         </motion.div>
       ))}
-      <motion.button
-        className="w-24 h-36 bg-gray-300 flex items-center justify-center shadow-md rounded pb-6"
-        whileHover={{ scale: 1.1 }}
-      >
-        More
-      </motion.button>
+      <Link href="/bookstore">
+        <motion.div
+          className="w-24 h-36 flex items-center justify-center cursor-pointer"
+          whileHover={{ scale: 1.1 }}
+        >
+          <div className="relative w-full h-full bg-gray-700 rounded shadow-md overflow-hidden">
+            <div className="absolute bottom-0 right-0 w-6 h-36 bg-gray-600 rounded-sm"></div>
+            <div className="absolute bottom-0 left-0 w-6 h-36 bg-gray-500 rounded-sm"></div>
+            <div className="absolute bottom-0 left-6 w-6 h-36 bg-gray-400 rounded-sm"></div>
+            <div className="absolute inset-0 flex items-center justify-center text-white font-bold">
+              More
+            </div>
+          </div>
+        </motion.div>
+      </Link>
     </div>
   );
 };

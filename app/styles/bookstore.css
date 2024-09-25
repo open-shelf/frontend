@@ -1,0 +1,10 @@
+/* Add any custom styles here */
+.book-cover {
+  transition: transform 0.3s ease-in-out;
+}
+
+.book-cover:hover {
+  transform: scale(1.05);
+}
+
+/* Add more custom styles as needed */

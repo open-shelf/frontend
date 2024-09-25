@@ -1,4 +1,4 @@
-import Shelf3D from "./components/Shelf3D";
+import Shelf3D from "./components/shelves/Shelf3D";
 
 export default function Home() {
   return (

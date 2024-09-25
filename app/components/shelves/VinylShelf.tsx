@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import vinyl from "./vinyls/v2.webp";
+import vinyl from "./shelf_content/vinyls/v2.webp";
 
 const vinyls = [
   { id: 1, image: vinyl, title: "Album One" },

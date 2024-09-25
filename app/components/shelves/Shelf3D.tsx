@@ -79,13 +79,13 @@ const Shelf3D: React.FC = () => {
   return (
     <div
       ref={containerRef}
-      className="bg-[#9c9e9d]"
+      className="bg-secondary"
       style={{ height: "400vh" }}
     >
       <div className="sticky top-0 h-screen flex items-center justify-center overflow-hidden">
         {/* Header Text */}
         <motion.div
-          className="text-6xl font-extrabold text-black absolute z-10"
+          className="text-6xl font-extrabold text-foreground absolute z-10"
           style={{
             opacity: useTransform(scrollYProgress, [0, 0.05], [1, 0]),
             left: "15%",
@@ -94,14 +94,14 @@ const Shelf3D: React.FC = () => {
           }}
         >
           OpenShelf
-          <div className="text-2xl font-bold">
+          <div className="text-2xl font-bold text-muted-foreground">
             Do what you like, Stake what you love!
           </div>
         </motion.div>
 
         {/* Main White Box */}
         <motion.div
-          className="w-[33%] aspect-square  rounded-lg flex flex-col justify-between p-4 relative origin-top"
+          className="w-[33%] aspect-square bg-card rounded-lg flex flex-col justify-between p-4 relative origin-top"
           style={{
             scale: whiteBoxScale,
             x: whiteBoxX,

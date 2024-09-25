@@ -12,7 +12,7 @@ const genres = [
 
 export default function StoreBook() {
   return (
-    <section className="bg-background p-6 rounded-2xl shadow-md">
+    <section className="bg-background p-6 rounded-2xl shadow-md border-2 border-[#A8DADC]">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold text-gray-900">In Store</h2>
         <a

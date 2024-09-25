@@ -14,7 +14,7 @@ const VinylShelf: React.FC = () => {
   const [hoveredId, setHoveredId] = useState<number | null>(null);
 
   return (
-    <div className="w-full h-full flex flex-wrap gap-4 justify-center items-center pb-1">
+    <div className="w-full h-full flex flex-wrap gap-4 justify-center items-center pb-3">
       {vinyls.map((vinyl) => (
         <motion.div
           key={vinyl.id}

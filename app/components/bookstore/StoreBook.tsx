@@ -2,15 +2,15 @@ import { ChevronRight } from "lucide-react";
 import Book from "./Book";
 
 const genres = [
-  { name: "Ficção Científica", books: "150" },
-  { name: "Romance", books: "200" },
-  { name: "Terror e Suspense", books: "120" },
-  { name: "Autoajuda e crescimento", books: "80" },
-  { name: "Infantojuvenil", books: "100" },
-  { name: "Literatura Brasileira", books: "90" },
-  { name: "Religião e Espiritualidade", books: "70" },
-  { name: "HQ's e Mangás", books: "110" },
-  { name: "Gastronomia", books: "60" },
+  { title: "Ficção Científica", author: "150 livros" },
+  { title: "Romance", author: "200 livros" },
+  { title: "Terror e Suspense", author: "120 livros" },
+  { title: "Autoajuda", author: "80 livros" },
+  { title: "Infantojuvenil", author: "100 livros" },
+  { title: "Literatura Brasileira", author: "90 livros" },
+  { title: "Espiritualidade", author: "70 livros" },
+  { title: "HQs e Mangás", author: "110 livros" },
+  { title: "Gastronomia", author: "60 livros" },
 ];
 
 export default function StoreBook() {
@@ -28,11 +28,7 @@ export default function StoreBook() {
       </div>
       <div className="flex space-x-6 overflow-x-auto pb-4">
         {genres.map((genre, index) => (
-          <Book
-            key={index}
-            title={genre.name}
-            subtitle={`${genre.books} books`}
-          />
+          <Book key={index} title={genre.title} author={genre.author} />
         ))}
       </div>
     </section>

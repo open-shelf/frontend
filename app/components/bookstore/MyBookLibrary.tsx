@@ -1,16 +1,17 @@
 import { ChevronRight } from "lucide-react";
 import Book from "./Book";
 
-const authors = [
-  { name: "J. R. R. Tolkien", books: "12" },
-  { name: "Paulo Coelho", books: "8" },
-  { name: "Stephen King", books: "15" },
-  { name: "Ursula K. Le Guin", books: "10" },
-  { name: "Isaac Asimov", books: "20" },
-  { name: "Octavia E. Butler", books: "7" },
-  { name: "James Patterson", books: "18" },
-  { name: "Clarice Lispector", books: "9" },
-  { name: "Frank Herbert", books: "6" },
+const books = [
+  { title: "1984", author: "George Orwell" },
+  { title: "To Kill a Mockingbird", author: "Harper Lee" },
+  { title: "Pride and Prejudice", author: "Jane Austen" },
+  { title: "The Great Gatsby", author: "F. Scott Fitzgerald" },
+  { title: "Moby Dick", author: "Herman Melville" },
+  { title: "War and Peace", author: "Leo Tolstoy" },
+  { title: "The Catcher in the Rye", author: "J.D. Salinger" },
+  { title: "The Lord of the Rings", author: "J.R.R. Tolkien" },
+  { title: "Harry Potter and the Sorcerer's Stone", author: "J.K. Rowling" },
+  { title: "The Hitchhiker's Guide to the Galaxy", author: "Douglas Adams" },
 ];
 
 export default function MyBookLibrary() {
@@ -27,12 +28,8 @@ export default function MyBookLibrary() {
         </a>
       </div>
       <div className="flex space-x-6 overflow-x-auto pb-4">
-        {authors.map((author, index) => (
-          <Book
-            key={index}
-            title={author.name}
-            subtitle={`${author.books} books`}
-          />
+        {books.map((book, index) => (
+          <Book key={index} title={book.title} author={book.author} />
         ))}
       </div>
     </section>

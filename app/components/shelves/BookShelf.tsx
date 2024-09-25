@@ -24,7 +24,7 @@ const books = [
 
 const BookShelf: React.FC = () => {
   return (
-    <div className="w-full h-full flex flex-wrap gap-4 justify-center items-center pb-6">
+    <div className="w-full h-full flex flex-wrap gap-4 justify-center items-center pb-8">
       {books.map((book) => (
         <motion.div
           key={book.id}

@@ -129,13 +129,13 @@ export default function BookDetailsPopup({
               )}
               <button
                 onClick={handleStake}
-                className="bg-[#457B9D] text-white px-4 py-2 rounded hover:bg-[#3D6F8E] transition-colors"
+                className="bg-[#FFD700] text-black px-4 py-2 rounded hover:bg-[#FFC300] transition-colors"
               >
                 Stake
               </button>
               <button
                 onClick={handlePurchaseFullBook}
-                className="bg-[#E63946] text-white px-4 py-2 rounded hover:bg-[#D02E3A] transition-colors"
+                className="bg-[#2ecc71] text-white px-4 py-2 rounded hover:bg-[#27ae60] transition-colors"
               >
                 Purchase Book
               </button>

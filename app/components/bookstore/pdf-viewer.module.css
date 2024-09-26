@@ -263,3 +263,97 @@
 }
 
 /* ... rest of the existing styles ... */
+
+.stakeAndPurchaseButton {
+  margin: 15px;
+  padding: 10px;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background-color 0.3s ease;
+}
+
+.stakeAndPurchaseButton:hover {
+  background-color: #c0392b;
+}
+
+/* ... rest of the existing styles ... */
+
+.sidebarFooter {
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid #ddd;
+}
+
+.purchaseButton,
+.stakeButton {
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background-color 0.3s ease, opacity 0.3s ease;
+  margin: 5px 0;
+  width: 100%;
+}
+
+.purchaseButton {
+  background-color: #2ecc71;
+  color: white;
+}
+
+.purchaseButton:hover {
+  background-color: #27ae60;
+}
+
+.stakeButton {
+  background-color: #FFD700;
+  color: black;
+}
+
+.stakeButton:hover:not(:disabled) {
+  background-color: #FFC300;
+}
+
+.stakeButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ... rest of the existing styles ... */
+
+.stakeButtonWrapper {
+  position: relative;
+}
+
+.stakeTooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 0.8em;
+  white-space: nowrap;
+  z-index: 10;
+  margin-bottom: 5px;
+}
+
+.stakeTooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: rgba(0, 0, 0, 0.8) transparent transparent transparent;
+}
+
+/* ... rest of the existing styles ... */

@@ -26,10 +26,11 @@ const PDFViewer = () => {
   const [isLastPage, setIsLastPage] = useState(false);
   const [pdfKey, setPdfKey] = useState(0);
   const [pdfDimensions, setPdfDimensions] = useState({ width: 0, height: 0 });
+  const [showStakeTooltip, setShowStakeTooltip] = useState(false);
 
   const initialScale = 1.2;
 
-  const { bookDetails } = useBook();
+  const { bookDetails, stakeAndPurchaseBook } = useBook();
 
   const [chapterInfos, setChapterInfos] = useState<ChapterInfo[]>([]);
   const [selectedChapter, setSelectedChapter] = useState<ChapterInfo | null>(
@@ -53,6 +54,10 @@ const PDFViewer = () => {
     stakes,
     image,
   } = bookDetails;
+
+  const allChaptersPurchased = chapterInfos.every(
+    (chapter) => chapter.is_purchased
+  );
 
   useEffect(() => {
     const fetchChapterInfos = async () => {
@@ -227,6 +232,23 @@ const PDFViewer = () => {
     }
   }, [selectedChapter, chapterInfos]);
 
+  const handlePurchaseWholeBook = () => {
+    if (bookDetails) {
+      stakeAndPurchaseBook(bookDetails.id);
+      console.log("Purchasing whole book:", bookDetails.id);
+    }
+  };
+
+  const handleStakeClick = () => {
+    if (!allChaptersPurchased) {
+      setShowStakeTooltip(true);
+      setTimeout(() => setShowStakeTooltip(false), 3000); // Hide tooltip after 3 seconds
+    } else if (bookDetails) {
+      stakeAndPurchaseBook(bookDetails.id);
+      console.log("Staking for book:", bookDetails.id);
+    }
+  };
+
   return (
     <div ref={containerRef} className={styles.container}>
       <div className={styles.sidebar}>
@@ -250,6 +272,36 @@ const PDFViewer = () => {
               </button>
             </div>
           ))}
+        </div>
+        <div className={styles.sidebarFooter}>
+          {!allChaptersPurchased && (
+            <button
+              onClick={handlePurchaseWholeBook}
+              className={styles.purchaseButton}
+            >
+              Purchase Whole Book
+            </button>
+          )}
+          <div className={styles.stakeButtonWrapper}>
+            <button
+              onClick={handleStakeClick}
+              onMouseEnter={() =>
+                !allChaptersPurchased && setShowStakeTooltip(true)
+              }
+              onMouseLeave={() => setShowStakeTooltip(false)}
+              className={`${styles.stakeButton} ${
+                !allChaptersPurchased ? styles.disabledStake : ""
+              }`}
+              disabled={!allChaptersPurchased}
+            >
+              Stake
+            </button>
+            {showStakeTooltip && !allChaptersPurchased && (
+              <div className={styles.stakeTooltip}>
+                All chapters must be purchased before staking
+              </div>
+            )}
+          </div>
         </div>
       </div>
       <div className={styles.pdfContainer}>

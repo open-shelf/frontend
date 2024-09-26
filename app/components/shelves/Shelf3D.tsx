@@ -85,7 +85,7 @@ const Shelf3D: React.FC = () => {
       <div className="sticky top-0 h-screen flex items-center justify-center overflow-hidden">
         {/* Header Text */}
         <motion.div
-          className="text-6xl font-extrabold text-foreground absolute z-10 text-[#1D3357]"
+          className="text-6xl text-[#1D3357] font-extrabold  absolute z-10 "
           style={{
             opacity: useTransform(scrollYProgress, [0, 0.05], [1, 0]),
             left: "15%",

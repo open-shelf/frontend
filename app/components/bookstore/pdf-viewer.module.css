@@ -145,3 +145,16 @@
 .backButton:hover {
   background-color: #e0e0e0;
 }
+
+.debugInfo {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  font-size: 14px;
+  color: #333;
+  z-index: 1000;
+  /* Remove the following lines */
+  /* background-color: rgba(255, 255, 255, 0.8); */
+  /* padding: 10px; */
+  /* border-radius: 5px; */
+}

@@ -23,6 +23,14 @@ export default function BookDetailsPopup({
   pdfUrl,
   onClose,
 }: BookDetailsPopupProps) {
+  const handleStake = () => {
+    console.log(`Staking book: ${title}`);
+  };
+
+  const handlePurchaseFullBook = () => {
+    console.log(`Purchasing full book: ${title}`);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -35,9 +43,29 @@ export default function BookDetailsPopup({
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
-        className="bg-white p-8 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+        className="bg-white p-8 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto relative"
         onClick={(e) => e.stopPropagation()}
       >
+        <button
+          onClick={onClose}
+          className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 transition-colors"
+          aria-label="Close"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
         <div className="flex flex-col md:flex-row">
           <div className="md:w-1/3 mb-4 md:mb-0 md:mr-6">
             {image && (
@@ -79,10 +107,16 @@ export default function BookDetailsPopup({
                 </Link>
               )}
               <button
-                onClick={onClose}
-                className="bg-[#A8DADC] text-[#1D3557] px-4 py-2 rounded hover:bg-[#8ECBD0] transition-colors"
+                onClick={handleStake}
+                className="bg-[#457B9D] text-white px-4 py-2 rounded hover:bg-[#3D6F8E] transition-colors"
               >
-                Close
+                Stake
+              </button>
+              <button
+                onClick={handlePurchaseFullBook}
+                className="bg-[#E63946] text-white px-4 py-2 rounded hover:bg-[#D02E3A] transition-colors"
+              >
+                Purchase Book
               </button>
             </div>
           </div>

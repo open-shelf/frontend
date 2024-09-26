@@ -240,6 +240,9 @@ const PDFViewer = ({ pdfUrl }: { pdfUrl: string }) => {
           <button onClick={zoomIn} className={styles.button}>
             Zoom In
           </button>
+          <button onClick={toggleSideBySide} className={styles.button}>
+            {isSideBySide ? "Single Page" : "Side by Side"}
+          </button>
           {isLastPage && nextPdfURL && (
             <>
               {nextChapterPurchased ? (

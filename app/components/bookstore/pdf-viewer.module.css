@@ -229,3 +229,37 @@
 }
 
 /* ... other existing styles ... */
+
+.instructions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  font-size: 1.5rem;
+  color: #666;
+  position: relative;
+}
+
+.instructionArrow {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  margin-right: 30px;
+  animation: pointToSidebar 1s ease-in-out infinite alternate;
+}
+
+.instructionText {
+  font-size: 1.5rem;
+  color: #666;
+}
+
+@keyframes pointToSidebar {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-15px);
+  }
+}
+
+/* ... rest of the existing styles ... */

@@ -1,17 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import styles from "./pdf-viewer.module.css";
-// Remove the router import
-// import { useRouter } from "next/router";
 import next from "next";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
-// Add pdfUrl as a prop to the component
 const PDFViewer = ({ pdfUrl }: { pdfUrl: string }) => {
-  // Remove the router constant
-  // const router = useRouter();
-
   const [numPages, setNumPages] = useState<number | null>(null);
   const [pageNumber, setPageNumber] = useState(1);
   const [scale, setScale] = useState(1.2);
@@ -27,6 +21,8 @@ const PDFViewer = ({ pdfUrl }: { pdfUrl: string }) => {
   } | null>(null);
   const [isLastPage, setIsLastPage] = useState(false);
   const [pdfKey, setPdfKey] = useState(0);
+  const [nextChapterPurchased, setNextChapterPurchased] =
+    useState<boolean>(false);
 
   const initialScale = 1.2;
 
@@ -55,16 +51,28 @@ const PDFViewer = ({ pdfUrl }: { pdfUrl: string }) => {
 
   const fetchNextPdfURL = async () => {
     try {
+      console.log("Fetching next PDF URL...");
       const response = await fetch("http://localhost:8000/chapter-info");
       const data = await response.json();
-      console.log(data);
+      console.log("Received chapter info:", data);
+
       if (data.url) {
         setNextPdfURL("http://localhost:8000/" + data.url);
+        console.log("Next PDF URL set:", "http://localhost:8000/" + data.url);
       }
-      if (data.chapter) {
-        setChapterInfo(data.chapter);
-      }
-      setError(null); // Clear any previous errors
+
+      setChapterInfo({
+        chapter: data.chapter,
+        purchased: data.purchased,
+      });
+      setNextChapterPurchased(data.purchased);
+      console.log("Next chapter info:", {
+        chapter: data.chapter,
+        purchased: data.purchased,
+      });
+      console.log("Next chapter purchased:", data.purchased);
+
+      setError(null);
     } catch (error) {
       console.error("Error fetching next PDF URL:", error);
       setError("Failed to fetch next PDF information");
@@ -73,18 +81,21 @@ const PDFViewer = ({ pdfUrl }: { pdfUrl: string }) => {
 
   useEffect(() => {
     if (isLastPage && !nextPdfURL) {
+      console.log("Last page reached, fetching next PDF URL");
       fetchNextPdfURL();
     }
-  }, [isLastPage, nextPdfURL, pdfURL]); // Add pdfURL to the dependency array
+  }, [isLastPage, nextPdfURL, pdfURL]);
 
   const loadNextPdf = () => {
-    console.log(nextPdfURL);
+    console.log("Loading next PDF...");
+    console.log("Next PDF URL:", nextPdfURL);
     if (nextPdfURL) {
       setPdfURL(nextPdfURL);
       setPageNumber(1);
       setNumPages(null);
       setNextPdfURL(null);
-      setPdfKey((prevKey) => prevKey + 1); // Increment the key to force a reload
+      setPdfKey((prevKey) => prevKey + 1);
+      console.log("Next PDF loaded. New PDF URL:", nextPdfURL);
     }
   };
 
@@ -178,6 +189,15 @@ const PDFViewer = ({ pdfUrl }: { pdfUrl: string }) => {
     window.history.back();
   };
 
+  const handlePurchase = () => {
+    console.log("Purchase button clicked");
+    // Implement the purchase logic here
+    console.log("Purchase functionality to be implemented");
+    // After successful purchase, update the state
+    setNextChapterPurchased(true);
+    console.log("Next chapter marked as purchased");
+  };
+
   return (
     <div ref={containerRef} className={styles.container}>
       <div className={styles.backButtonContainer}>
@@ -205,11 +225,7 @@ const PDFViewer = ({ pdfUrl }: { pdfUrl: string }) => {
             Previous
           </button>
           <span className={styles.pageInfo}>
-            Page {pageNumber}{" "}
-            {isSideBySide && pageNumber + 1 <= (numPages || 1)
-              ? `- ${pageNumber + 1}`
-              : ""}{" "}
-            of {numPages}
+            Page {pageNumber} of {numPages}
           </span>
           <button
             onClick={() => changePage(1)}
@@ -224,16 +240,18 @@ const PDFViewer = ({ pdfUrl }: { pdfUrl: string }) => {
           <button onClick={zoomIn} className={styles.button}>
             Zoom In
           </button>
-          <button onClick={resetZoom} className={styles.button}>
-            Reset Zoom
-          </button>
-          <button onClick={toggleSideBySide} className={styles.button}>
-            {isSideBySide ? "Single Page" : "Side by Side"}
-          </button>
-          {nextPdfURL && (
-            <button onClick={loadNextPdf} className={styles.button}>
-              Next PDF
-            </button>
+          {isLastPage && nextPdfURL && (
+            <>
+              {nextChapterPurchased ? (
+                <button onClick={loadNextPdf} className={styles.button}>
+                  Next Chapter
+                </button>
+              ) : (
+                <button onClick={handlePurchase} className={styles.button}>
+                  Purchase Next Chapter
+                </button>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -275,12 +293,27 @@ const PDFViewer = ({ pdfUrl }: { pdfUrl: string }) => {
         )}
       </div>
       {error && <div className={styles.error}>{error}</div>}
-      <div className={styles.currentUrl}>Current PDF URL: {pdfURL}</div>
-      {isLastPage && nextPdfURL && (
-        <button onClick={loadNextPdf} className={styles.button}>
-          Next Chapter
-        </button>
-      )}
+      {/* <div className={styles.currentUrl}>Current PDF URL: {pdfURL}</div> */}
+      {/* {isLastPage && nextPdfURL && (
+        <>
+          {nextChapterPurchased ? (
+            <button onClick={loadNextPdf} className={styles.button}>
+              Next Chapter
+            </button>
+          ) : (
+            <button onClick={handlePurchase} className={styles.button}>
+              Purchase Next Chapter
+            </button>
+          )}
+        </>
+      )} */}
+      {/* Add this debug information */}
+      <div className={styles.debugInfo}>
+        <p>Is Last Page: {isLastPage ? "Yes" : "No"}</p>
+        <p>Next PDF URL: {nextPdfURL || "None"}</p>
+        <p>Next Chapter Purchased: {nextChapterPurchased ? "Yes" : "No"}</p>
+        <p>Chapter Info: {JSON.stringify(chapterInfo)}</p>
+      </div>
     </div>
   );
 };

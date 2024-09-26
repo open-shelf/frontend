@@ -9,9 +9,9 @@ const books = [
     fullBookPrice: 4000,
     totalStake: 10900,
     chapters: [
-      "http://localhost:8000/pdf/chapter1.pdf",
-      "http://localhost:8000/pdf/chapter2.pdf",
-      "http://localhost:8000/pdf/chapter3.pdf",
+      "http://localhost:8000/info/chapter1.pdf",
+      "http://localhost:8000/info/chapter2.pdf",
+      "http://localhost:8000/info/chapter3.pdf",
     ],
     stakes: [
       { staker: "Staker1", amount: 4000 },
@@ -26,9 +26,9 @@ const books = [
     fullBookPrice: 4500,
     totalStake: 9700,
     chapters: [
-      "http://localhost:8000/pdf/chapter1.pdf",
-      "http://localhost:8000/pdf/chapter2.pdf",
-      "http://localhost:8000/pdf/chapter3.pdf",
+      "http://localhost:8000/info/chapter1.pdf",
+      "http://localhost:8000/info/chapter2.pdf",
+      "http://localhost:8000/info/chapter3.pdf",
     ],
     stakes: [
       { staker: "Staker2", amount: 4200 },
@@ -43,9 +43,9 @@ const books = [
     fullBookPrice: 4100,
     totalStake: 11400,
     chapters: [
-      "http://localhost:8000/pdf/chapter1.pdf",
-      "http://localhost:8000/pdf/chapter2.pdf",
-      "http://localhost:8000/pdf/chapter3.pdf",
+      "http://localhost:8000/info/chapter1.pdf",
+      "http://localhost:8000/info/chapter2.pdf",
+      "http://localhost:8000/info/chapter3.pdf",
     ],
     stakes: [
       { staker: "Staker8", amount: 5000 },
@@ -60,9 +60,9 @@ const books = [
     fullBookPrice: 4500,
     totalStake: 9600,
     chapters: [
-      "http://localhost:8000/pdf/chapter1.pdf",
-      "http://localhost:8000/pdf/chapter2.pdf",
-      "http://localhost:8000/pdf/chapter3.pdf",
+      "http://localhost:8000/info/chapter1.pdf",
+      "http://localhost:8000/info/chapter2.pdf",
+      "http://localhost:8000/info/chapter3.pdf",
     ],
     stakes: [
       { staker: "Staker6", amount: 4000 },

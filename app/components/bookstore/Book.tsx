@@ -84,6 +84,7 @@ export default function Book({
           totalStake={totalStake}
           chapters={chapters}
           stakes={stakes}
+          image={""}
           onClose={handleClosePopup}
         />
       )}

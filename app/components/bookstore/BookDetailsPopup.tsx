@@ -1,6 +1,8 @@
 import Image from "next/image";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useBook } from "./BookContext";
+import { useRouter } from "next/navigation";
 
 interface BookDetailsPopupProps {
   title: string;
@@ -25,6 +27,23 @@ export default function BookDetailsPopup({
   image,
   onClose,
 }: BookDetailsPopupProps) {
+  const { setBookDetails } = useBook();
+  const router = useRouter();
+
+  const handleViewPDF = () => {
+    setBookDetails({
+      title,
+      author,
+      chapterPrices,
+      fullBookPrice,
+      totalStake,
+      chapters,
+      stakes,
+      image,
+    });
+    router.push("/reader");
+  };
+
   const handleStake = () => {
     console.log(`Staking book: ${title}`);
   };
@@ -70,7 +89,7 @@ export default function BookDetailsPopup({
         </button>
         <div className="flex flex-col md:flex-row">
           <div className="md:w-1/3 mb-4 md:mb-0 md:mr-6">
-            {
+            {image && (
               <Image
                 src={image}
                 alt={title}
@@ -79,7 +98,7 @@ export default function BookDetailsPopup({
                 objectFit="cover"
                 className="rounded-lg shadow-md"
               />
-            }
+            )}
           </div>
           <div className="md:w-2/3">
             <h2 className="text-3xl font-bold mb-2 text-[#1D3557]">{title}</h2>
@@ -99,12 +118,11 @@ export default function BookDetailsPopup({
 
             <div className="flex flex-wrap gap-2 mt-4">
               {chapters && (
-                <Link
-                  href={`/bookstore/reader?url=${encodeURIComponent(
-                    title
-                  )}&title=${encodeURIComponent(title)}`}
-                >
-                  <button className="bg-[#1D3557] text-white px-4 py-2 rounded hover:bg-[#2A4A6D] transition-colors">
+                <Link href="/reader">
+                  <button
+                    className="bg-[#1D3557] text-white px-4 py-2 rounded hover:bg-[#2A4A6D] transition-colors"
+                    onClick={handleViewPDF}
+                  >
                     View PDF
                   </button>
                 </Link>

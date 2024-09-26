@@ -2,29 +2,28 @@
 
 import { useSearchParams } from "next/navigation";
 import PDFViewer from "../components/bookstore/pdf-viewer";
+import { useBook } from "../components/bookstore/BookContext";
 
 const ReaderPage = () => {
   const searchParams = useSearchParams();
-  const url = searchParams.get("url");
-  const title = searchParams.get("title");
+  const { bookDetails } = useBook();
 
-  if (!url) {
-    return <div>No PDF URL provided</div>;
+  console.log("We are here!");
+  console.log(bookDetails);
+
+  if (!bookDetails) {
+    return (
+      <div>
+        Loading book details... If this persists, please go back and select a
+        book.
+      </div>
+    );
   }
 
   return (
     <div className="h-screen flex flex-col">
-      <header className="bg-primary text-white p-4">
-        <h1 className="text-2xl">{title || "PDF Reader"}</h1>
-        <button
-          onClick={() => window.history.back()}
-          className="mt-2 text-sm underline"
-        >
-          Back to Bookstore
-        </button>
-      </header>
       <main className="flex-grow">
-        <PDFViewer pdfUrl={decodeURIComponent(url)} />
+        <PDFViewer />
       </main>
     </div>
   );

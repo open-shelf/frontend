@@ -1,35 +1,130 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import styles from "./pdf-viewer.module.css";
-import next from "next";
+import { useBook } from "./BookContext";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
-const PDFViewer = ({ pdfUrl }: { pdfUrl: string }) => {
+interface ChapterInfo {
+  index: number;
+  is_purchased: boolean;
+  name: string;
+  chapter_content: string | null;
+}
+
+const PDFViewer = () => {
   const [numPages, setNumPages] = useState<number | null>(null);
   const [pageNumber, setPageNumber] = useState(1);
   const [scale, setScale] = useState(1.2);
   const [isControlBarMinimized, setIsControlBarMinimized] = useState(false);
   const [isSideBySide, setIsSideBySide] = useState(false);
-  const [pdfURL, setPdfURL] = useState<string | null>(pdfUrl);
+  const [pdfURL, setPdfURL] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [nextPdfURL, setNextPdfURL] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [chapterInfo, setChapterInfo] = useState<{
-    chapter: number;
-    purchased: boolean;
-  } | null>(null);
   const [isLastPage, setIsLastPage] = useState(false);
   const [pdfKey, setPdfKey] = useState(0);
-  const [nextChapterPurchased, setNextChapterPurchased] =
-    useState<boolean>(false);
+  const [pdfDimensions, setPdfDimensions] = useState({ width: 0, height: 0 });
 
   const initialScale = 1.2;
 
+  const { bookDetails } = useBook();
+
+  const [chapterInfos, setChapterInfos] = useState<ChapterInfo[]>([]);
+  const [selectedChapter, setSelectedChapter] = useState<ChapterInfo | null>(
+    null
+  );
+
+  const [nextChapter, setNextChapter] = useState<ChapterInfo | null>(null);
+
+  if (!bookDetails) {
+    return <div>No book details available</div>;
+  }
+
+  const {
+    title,
+    author,
+    chapterPrices,
+    fullBookPrice,
+    totalStake,
+    chapters,
+    stakes,
+    image,
+  } = bookDetails;
+
+  useEffect(() => {
+    const fetchChapterInfos = async () => {
+      try {
+        const chapterInfoPromises = chapters.map((chapterUrl) =>
+          fetch(chapterUrl).then((res) => res.json())
+        );
+        const chaptersData = await Promise.all(chapterInfoPromises);
+        setChapterInfos(chaptersData);
+      } catch (error) {
+        console.error("Error fetching chapter information:", error);
+        setError("Failed to fetch chapter information");
+      }
+    };
+
+    fetchChapterInfos();
+  }, [chapters]);
+
+  const handleChapterSelect = (chapter: ChapterInfo) => {
+    if (chapter.is_purchased) {
+      setSelectedChapter(chapter);
+      setPdfURL(chapter.chapter_content);
+      setPageNumber(1);
+      setNumPages(null);
+      setPdfKey((prevKey) => prevKey + 1);
+    } else {
+      console.log(`Bought chapter ${chapter.index}`);
+      // Here you would typically make an API call to purchase the chapter
+      // For now, we'll just update the local state
+      setChapterInfos((prevChapters) =>
+        prevChapters.map((ch) =>
+          ch.index === chapter.index ? { ...ch, is_purchased: true } : ch
+        )
+      );
+    }
+  };
+
+  const calculateScale = () => {
+    if (containerRef.current && pdfDimensions.width && pdfDimensions.height) {
+      const containerWidth = containerRef.current.clientWidth - 60; // Increased padding
+      const containerHeight = containerRef.current.clientHeight - 50; // Increased padding
+
+      const widthScale = containerWidth / pdfDimensions.width;
+      const heightScale = containerHeight / pdfDimensions.height;
+
+      // Use the smaller scale to ensure the entire page fits
+      const newScale = Math.min(widthScale, heightScale, 2); // Reduced max zoom to 1.2x
+
+      // Apply a factor to make it slightly smaller
+      const adjustedScale = newScale * 0.9;
+
+      setScale(adjustedScale);
+    }
+  };
+
+  useEffect(() => {
+    calculateScale();
+    window.addEventListener("resize", calculateScale);
+    return () => window.removeEventListener("resize", calculateScale);
+  }, [pdfDimensions]);
+
   function onDocumentLoadSuccess({ numPages }: { numPages: number }): void {
     setNumPages(numPages);
-    setPageNumber(1); // Reset to first page when a new document is loaded
+    setPageNumber(1);
     setIsLastPage(1 === numPages);
+
+    // Get the dimensions of the first page
+    if (pdfURL) {
+      pdfjs.getDocument(pdfURL).promise.then((pdf) => {
+        pdf.getPage(1).then((page) => {
+          const viewport = page.getViewport({ scale: 1 });
+          setPdfDimensions({ width: viewport.width, height: viewport.height });
+        });
+      });
+    }
   }
 
   const changePage = (offset: number) => {
@@ -49,72 +144,9 @@ const PDFViewer = ({ pdfUrl }: { pdfUrl: string }) => {
     });
   };
 
-  const fetchNextPdfURL = async () => {
-    try {
-      console.log("Fetching next PDF URL...");
-      const response = await fetch("http://localhost:8000/chapter-info");
-      const data = await response.json();
-      console.log("Received chapter info:", data);
-
-      if (data.url) {
-        setNextPdfURL("http://localhost:8000/" + data.url);
-        console.log("Next PDF URL set:", "http://localhost:8000/" + data.url);
-      }
-
-      setChapterInfo({
-        chapter: data.chapter,
-        purchased: data.purchased,
-      });
-      setNextChapterPurchased(data.purchased);
-      console.log("Next chapter info:", {
-        chapter: data.chapter,
-        purchased: data.purchased,
-      });
-      console.log("Next chapter purchased:", data.purchased);
-
-      setError(null);
-    } catch (error) {
-      console.error("Error fetching next PDF URL:", error);
-      setError("Failed to fetch next PDF information");
-    }
-  };
-
-  useEffect(() => {
-    if (isLastPage && !nextPdfURL) {
-      console.log("Last page reached, fetching next PDF URL");
-      fetchNextPdfURL();
-    }
-  }, [isLastPage, nextPdfURL, pdfURL]);
-
-  const loadNextPdf = () => {
-    console.log("Loading next PDF...");
-    console.log("Next PDF URL:", nextPdfURL);
-    if (nextPdfURL) {
-      setPdfURL(nextPdfURL);
-      setPageNumber(1);
-      setNumPages(null);
-      setNextPdfURL(null);
-      setPdfKey((prevKey) => prevKey + 1);
-      console.log("Next PDF loaded. New PDF URL:", nextPdfURL);
-    }
-  };
-
   const zoomIn = () => setScale((prevScale) => Math.min(prevScale + 0.1, 3));
   const zoomOut = () => setScale((prevScale) => Math.max(prevScale - 0.1, 0.5));
   const resetZoom = () => setScale(initialScale);
-
-  useEffect(() => {
-    const updateScale = () => {
-      if (containerRef.current) {
-        const { clientWidth, clientHeight } = containerRef.current;
-        setScale(Math.min(clientWidth / 600, clientHeight / 800));
-      }
-    };
-
-    updateScale();
-    window.addEventListener("resize", updateScale);
-    return () => window.removeEventListener("resize", updateScale);
-  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -164,102 +196,53 @@ const PDFViewer = ({ pdfUrl }: { pdfUrl: string }) => {
     });
   };
 
-  // Add this useEffect to handle invalid PDF URLs
-  useEffect(() => {
-    const checkPdfUrl = async () => {
-      try {
-        const response = await fetch(pdfUrl, { method: "GET" });
-        if (!response.ok) {
-          throw new Error("PDF not found");
-        }
-      } catch (error) {
-        console.error("Error loading PDF:", error);
-        setError(
-          "Failed to load PDF. The file might not exist or you may not have permission to view it."
-        );
-        setPdfURL(null);
-      }
-    };
-
-    checkPdfUrl();
-  }, [pdfUrl]);
-
   const handleGoBack = () => {
     // Use window.history instead of router
     window.history.back();
   };
 
-  const handlePurchase = () => {
-    console.log("Purchase button clicked");
-    // Implement the purchase logic here
-    console.log("Purchase functionality to be implemented");
-    // After successful purchase, update the state
-    setNextChapterPurchased(true);
-    console.log("Next chapter marked as purchased");
-  };
+  useEffect(() => {
+    if (isLastPage && selectedChapter) {
+      const currentIndex = chapterInfos.findIndex(
+        (ch) => ch.index === selectedChapter.index
+      );
+      if (currentIndex < chapterInfos.length - 1) {
+        setNextChapter(chapterInfos[currentIndex + 1]);
+      } else {
+        setNextChapter(null);
+      }
+    } else {
+      setNextChapter(null);
+    }
+  }, [isLastPage, selectedChapter, chapterInfos]);
 
   return (
     <div ref={containerRef} className={styles.container}>
-      <div className={styles.backButtonContainer}>
-        <button onClick={handleGoBack} className={styles.backButton}>
-          ← Back
-        </button>
-      </div>
-      <div
-        className={`${styles.controlBar} ${
-          isControlBarMinimized ? styles.minimized : ""
-        }`}
-      >
-        <button
-          onClick={() => setIsControlBarMinimized(!isControlBarMinimized)}
-          className={styles.toggleButton}
-        >
-          {isControlBarMinimized ? "▲" : "▼"}
-        </button>
-        <div className={styles.controlsWrapper}>
-          <button
-            onClick={() => changePage(-1)}
-            disabled={pageNumber <= 1}
-            className={styles.button}
-          >
-            Previous
+      <div className={styles.sidebar}>
+        <div className={styles.sidebarHeader}>
+          <button onClick={handleGoBack} className={styles.backButton}>
+            ←
           </button>
-          <span className={styles.pageInfo}>
-            Page {pageNumber} of {numPages}
-          </span>
-          <button
-            onClick={() => changePage(1)}
-            disabled={pageNumber >= (numPages || 1)}
-            className={styles.button}
-          >
-            Next
-          </button>
-          <button onClick={zoomOut} className={styles.button}>
-            Zoom Out
-          </button>
-          <button onClick={zoomIn} className={styles.button}>
-            Zoom In
-          </button>
-          <button onClick={toggleSideBySide} className={styles.button}>
-            {isSideBySide ? "Single Page" : "Side by Side"}
-          </button>
-          {isLastPage && nextPdfURL && (
-            <>
-              {nextChapterPurchased ? (
-                <button onClick={loadNextPdf} className={styles.button}>
-                  Next Chapter
-                </button>
-              ) : (
-                <button onClick={handlePurchase} className={styles.button}>
-                  Purchase Next Chapter
-                </button>
-              )}
-            </>
-          )}
+          <h2 className={styles.bookTitle}>{title}</h2>
+        </div>
+        <div className={styles.chapterList}>
+          {chapterInfos.map((chapter) => (
+            <div key={chapter.index} className={styles.chapterItem}>
+              <span>{chapter.name}</span>
+              <button
+                onClick={() => handleChapterSelect(chapter)}
+                className={
+                  chapter.is_purchased ? styles.readButton : styles.buyButton
+                }
+              >
+                {chapter.is_purchased ? "Read" : "Buy"}
+              </button>
+            </div>
+          ))}
         </div>
       </div>
-      <div className={styles.pdfWrapper}>
-        {pdfURL ? (
+      <div className={styles.pdfContainer}>
+        {selectedChapter && selectedChapter.is_purchased && pdfURL ? (
           <Document
             key={pdfKey}
             file={pdfURL}
@@ -292,30 +275,79 @@ const PDFViewer = ({ pdfUrl }: { pdfUrl: string }) => {
             </div>
           </Document>
         ) : (
-          <div className={styles.error}>No valid PDF URL provided</div>
+          <div className={styles.instructions}>
+            {selectedChapter && !selectedChapter.is_purchased
+              ? "Please purchase this chapter to read it."
+              : "Select a chapter from the sidebar to start reading."}
+          </div>
         )}
       </div>
-      {error && <div className={styles.error}>{error}</div>}
-      {/* <div className={styles.currentUrl}>Current PDF URL: {pdfURL}</div> */}
-      {/* {isLastPage && nextPdfURL && (
-        <>
-          {nextChapterPurchased ? (
-            <button onClick={loadNextPdf} className={styles.button}>
-              Next Chapter
-            </button>
-          ) : (
-            <button onClick={handlePurchase} className={styles.button}>
-              Purchase Next Chapter
+
+      <div
+        className={`${styles.controlBar} ${
+          isControlBarMinimized ? styles.minimized : ""
+        }`}
+      >
+        <button
+          onClick={() => setIsControlBarMinimized(!isControlBarMinimized)}
+          className={`${styles.toggleButton} ${
+            isControlBarMinimized ? styles.toggleButtonMinimized : ""
+          }`}
+        >
+          {isControlBarMinimized ? "▲" : "▼"}
+        </button>
+        <div className={styles.controlsWrapper}>
+          <button
+            onClick={() => changePage(-1)}
+            disabled={pageNumber <= 1}
+            className={styles.button}
+          >
+            ←
+          </button>
+          <span className={styles.pageInfo}>
+            {pageNumber} / {numPages}
+          </span>
+          <button
+            onClick={() => changePage(1)}
+            disabled={pageNumber >= (numPages || 1)}
+            className={styles.button}
+          >
+            →
+          </button>
+          <button onClick={zoomOut} className={styles.button}>
+            -
+          </button>
+          <button onClick={zoomIn} className={styles.button}>
+            +
+          </button>
+          <button onClick={toggleSideBySide} className={styles.button}>
+            {isSideBySide ? "Single" : "Double"}
+          </button>
+          {nextChapter && (
+            <button
+              onClick={() => handleChapterSelect(nextChapter)}
+              className={
+                nextChapter.is_purchased ? styles.readButton : styles.buyButton
+              }
+            >
+              {nextChapter.is_purchased ? "Read Next" : "Buy Next"}
             </button>
           )}
-        </>
-      )} */}
-      {/* Add this debug information */}
+        </div>
+      </div>
+      {error && <div className={styles.error}>{error}</div>}
+
+      {/* Update the debug info */}
       <div className={styles.debugInfo}>
         <p>Is Last Page: {isLastPage ? "Yes" : "No"}</p>
-        <p>Next PDF URL: {nextPdfURL || "None"}</p>
-        <p>Next Chapter Purchased: {nextChapterPurchased ? "Yes" : "No"}</p>
-        <p>Chapter Info: {JSON.stringify(chapterInfo)}</p>
+        <p>Next PDF URL: {pdfURL || "None"}</p>
+        <p>
+          Next Chapter Purchased: {selectedChapter?.is_purchased ? "Yes" : "No"}
+        </p>
+        <p>
+          PDF Dimensions: {pdfDimensions.width}x{pdfDimensions.height}
+        </p>
+        <p>Current Scale: {scale.toFixed(2)}</p>
       </div>
     </div>
   );

@@ -1,12 +1,17 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import styles from "./pdf-viewer.module.css";
+// Remove the router import
+// import { useRouter } from "next/router";
 import next from "next";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 // Add pdfUrl as a prop to the component
 const PDFViewer = ({ pdfUrl }: { pdfUrl: string }) => {
+  // Remove the router constant
+  // const router = useRouter();
+
   const [numPages, setNumPages] = useState<number | null>(null);
   const [pageNumber, setPageNumber] = useState(1);
   const [scale, setScale] = useState(1.2);
@@ -168,8 +173,18 @@ const PDFViewer = ({ pdfUrl }: { pdfUrl: string }) => {
     checkPdfUrl();
   }, [pdfUrl]);
 
+  const handleGoBack = () => {
+    // Use window.history instead of router
+    window.history.back();
+  };
+
   return (
     <div ref={containerRef} className={styles.container}>
+      <div className={styles.backButtonContainer}>
+        <button onClick={handleGoBack} className={styles.backButton}>
+          ← Back
+        </button>
+      </div>
       <div
         className={`${styles.controlBar} ${
           isControlBarMinimized ? styles.minimized : ""

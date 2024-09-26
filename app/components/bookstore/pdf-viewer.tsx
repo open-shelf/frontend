@@ -35,6 +35,7 @@ const PDFViewer = () => {
   );
 
   const [nextChapter, setNextChapter] = useState<ChapterInfo | null>(null);
+  const [prevChapter, setPrevChapter] = useState<ChapterInfo | null>(null);
 
   if (!bookDetails) {
     return <div>No book details available</div>;
@@ -202,19 +203,27 @@ const PDFViewer = () => {
   };
 
   useEffect(() => {
-    if (isLastPage && selectedChapter) {
+    if (selectedChapter) {
       const currentIndex = chapterInfos.findIndex(
         (ch) => ch.index === selectedChapter.index
       );
+
+      if (currentIndex > 0) {
+        setPrevChapter(chapterInfos[currentIndex - 1]);
+      } else {
+        setPrevChapter(null);
+      }
+
       if (currentIndex < chapterInfos.length - 1) {
         setNextChapter(chapterInfos[currentIndex + 1]);
       } else {
         setNextChapter(null);
       }
     } else {
+      setPrevChapter(null);
       setNextChapter(null);
     }
-  }, [isLastPage, selectedChapter, chapterInfos]);
+  }, [selectedChapter, chapterInfos]);
 
   return (
     <div ref={containerRef} className={styles.container}>
@@ -297,6 +306,16 @@ const PDFViewer = () => {
           {isControlBarMinimized ? "▲" : "▼"}
         </button>
         <div className={styles.controlsWrapper}>
+          {prevChapter && (
+            <button
+              onClick={() => handleChapterSelect(prevChapter)}
+              className={
+                prevChapter.is_purchased ? styles.readButton : styles.buyButton
+              }
+            >
+              {prevChapter.is_purchased ? "Read Prev" : "Buy Prev"}
+            </button>
+          )}
           <button
             onClick={() => changePage(-1)}
             disabled={pageNumber <= 1}

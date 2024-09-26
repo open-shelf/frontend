@@ -1,30 +1,34 @@
 "use client";
 
-import Image from "next/image";
-import { motion } from "framer-motion";
 import { useState } from "react";
+import { motion } from "framer-motion";
+import Image from "next/image";
 import BookDetailsPopup from "./BookDetailsPopup";
 
 interface BookProps {
-  title: string;
   author: string;
-  isRounded?: boolean;
+  title: string;
+  chapterPrices: number[];
+  fullBookPrice: number;
+  totalStake: number;
+  chapters: string[];
+  stakes: { staker: string; amount: number }[];
+  showPrice: boolean;
   image?: string;
-  description?: string;
-  publishedDate?: string;
-  genre?: string;
-  pdfUrl?: string;
+  isRounded?: boolean;
 }
 
 export default function Book({
-  title,
   author,
-  isRounded = false,
+  title,
+  chapterPrices,
+  fullBookPrice,
+  totalStake,
+  chapters,
+  stakes,
+  showPrice,
   image,
-  description,
-  publishedDate,
-  genre,
-  pdfUrl,
+  isRounded = false,
 }: BookProps) {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
 
@@ -65,17 +69,21 @@ export default function Book({
         <span className="text-sm text-center w-32 overflow-hidden text-ellipsis text-gray-800">
           {title}
         </span>
+        {showPrice && (
+          <span className="text-xs text-primary mt-1">
+            Price: {fullBookPrice} lamports
+          </span>
+        )}
       </motion.div>
-
       {isPopupOpen && (
         <BookDetailsPopup
-          title={title}
           author={author}
-          image={image}
-          description={description}
-          publishedDate={publishedDate}
-          genre={genre}
-          pdfUrl={pdfUrl}
+          title={title}
+          chapterPrices={chapterPrices}
+          fullBookPrice={fullBookPrice}
+          totalStake={totalStake}
+          chapters={chapters}
+          stakes={stakes}
           onClose={handleClosePopup}
         />
       )}

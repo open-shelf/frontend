@@ -3,42 +3,72 @@ import Book from "./Book";
 
 const books = [
   {
+    author: "Pubkey123456", // Replace with actual Pubkey
     title: "1984",
-    author: "George Orwell",
-    description: "A dystopian novel set in a totalitarian society.",
-    publishedDate: "1949-06-08",
-    genre: "Dystopian Fiction",
-    image: "/images/1984.jpg",
-    pdfUrl: "http://localhost:8000/pdf/test.pdf",
+    chapterPrices: [1000, 1500, 2000], // Prices in smallest unit (e.g., lamports)
+    fullBookPrice: 4000,
+    totalStake: 10900,
+    chapters: [
+      "http://localhost:8000/pdf/chapter1.pdf",
+      "http://localhost:8000/pdf/chapter2.pdf",
+      "http://localhost:8000/pdf/chapter3.pdf",
+    ],
+    stakes: [
+      { staker: "Staker1", amount: 4000 },
+      { staker: "Staker7", amount: 3500 },
+      { staker: "Staker3", amount: 3400 },
+    ],
   },
   {
+    author: "Pubkey123456", // Replace with actual Pubkey
     title: "To Kill a Mockingbird",
-    author: "Harper Lee",
-    description:
-      "A novel about racial injustice and loss of innocence in the American South.",
-    publishedDate: "1960-07-11",
-    genre: "Southern Gothic",
-    image: "/images/to-kill-a-mockingbird.jpg",
-    pdfUrl: "http://localhost:8000/pdf/test.pdf",
+    chapterPrices: [1200, 1600, 2200], // Prices in smallest unit (e.g., lamports)
+    fullBookPrice: 4500,
+    totalStake: 9700,
+    chapters: [
+      "http://localhost:8000/pdf/chapter1.pdf",
+      "http://localhost:8000/pdf/chapter2.pdf",
+      "http://localhost:8000/pdf/chapter3.pdf",
+    ],
+    stakes: [
+      { staker: "Staker2", amount: 4200 },
+      { staker: "Staker4", amount: 3000 },
+      { staker: "Staker5", amount: 2500 },
+    ],
   },
   {
+    author: "Pubkey123456", // Replace with actual Pubkey
     title: "Pride and Prejudice",
-    author: "Jane Austen",
-    description: "A romantic novel of manners set in Georgian England.",
-    publishedDate: "1813-01-28",
-    genre: "Classic Romance",
-    image: "/images/pride-and-prejudice.jpg",
-    pdfUrl: "http://localhost:8000/pdf/test.pdf",
+    chapterPrices: [900, 1400, 1800], // Prices in smallest unit (e.g., lamports)
+    fullBookPrice: 4100,
+    totalStake: 11400,
+    chapters: [
+      "http://localhost:8000/pdf/chapter1.pdf",
+      "http://localhost:8000/pdf/chapter2.pdf",
+      "http://localhost:8000/pdf/chapter3.pdf",
+    ],
+    stakes: [
+      { staker: "Staker8", amount: 5000 },
+      { staker: "Staker3", amount: 3500 },
+      { staker: "Staker9", amount: 2900 },
+    ],
   },
   {
+    author: "Pubkey123456", // Replace with actual Pubkey
     title: "The Great Gatsby",
-    author: "F. Scott Fitzgerald",
-    description:
-      "A novel about the American Dream set in the Roaring Twenties.",
-    publishedDate: "1925-04-10",
-    genre: "American Literature",
-    image: "/images/great-gatsby.jpg",
-    pdfUrl: "http://localhost:8000/pdf/test.pdf",
+    chapterPrices: [1100, 1300, 2100], // Prices in smallest unit (e.g., lamports)
+    fullBookPrice: 4500,
+    totalStake: 9600,
+    chapters: [
+      "http://localhost:8000/pdf/chapter1.pdf",
+      "http://localhost:8000/pdf/chapter2.pdf",
+      "http://localhost:8000/pdf/chapter3.pdf",
+    ],
+    stakes: [
+      { staker: "Staker6", amount: 4000 },
+      { staker: "Staker10", amount: 2800 },
+      { staker: "Staker1", amount: 2800 },
+    ],
   },
 ];
 
@@ -57,7 +87,7 @@ export default function MyBookLibrary() {
       </div>
       <div className="flex space-x-6 overflow-x-auto pb-4">
         {books.map((book, index) => (
-          <Book key={index} {...book} />
+          <Book key={index} {...book} showPrice={false} />
         ))}
       </div>
     </section>

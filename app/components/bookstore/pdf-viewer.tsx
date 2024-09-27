@@ -305,20 +305,6 @@ const PDFViewer = () => {
         </div>
       </div>
       <div className={styles.pdfContainer}>
-        {!selectedChapter && (
-          <div className={styles.instructions}>
-            <Image
-              src={arrowImage}
-              alt="Arrow pointing to sidebar"
-              className={styles.instructionArrow}
-              width={100}
-              height={100}
-            />
-            <span className={styles.instructionText}>
-              Select a chapter from the sidebar to start reading
-            </span>
-          </div>
-        )}
         {selectedChapter && selectedChapter.is_purchased && pdfURL ? (
           <Document
             key={pdfKey}

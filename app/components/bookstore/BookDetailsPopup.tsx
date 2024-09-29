@@ -7,7 +7,10 @@ import { useRouter } from "next/navigation";
 interface BookDetailsPopupProps {
   title: string;
   author: string;
-  chapterPrices: number[];
+  description: string;
+  publishedDate: string;
+  genre: string;
+  chapterPrices: { price: number; description: string }[];
   fullBookPrice: number;
   totalStake: number;
   chapters: string[];
@@ -19,6 +22,9 @@ interface BookDetailsPopupProps {
 export default function BookDetailsPopup({
   author,
   title,
+  description,
+  publishedDate,
+  genre,
   chapterPrices,
   fullBookPrice,
   totalStake,
@@ -103,7 +109,7 @@ export default function BookDetailsPopup({
           <div className="md:w-2/3">
             <h2 className="text-3xl font-bold mb-2 text-[#1D3557]">{title}</h2>
             <p className="text-xl mb-4 text-[#457B9D]">By {author}</p>
-            {/* {description && <p className="mb-4 text-gray-700">{description}</p>}
+            {description && <p className="mb-4 text-gray-700">{description}</p>}
             {publishedDate && (
               <p className="mb-2 text-gray-600">
                 <span className="font-semibold">Published:</span>{" "}
@@ -114,7 +120,7 @@ export default function BookDetailsPopup({
               <p className="mb-4 text-gray-600">
                 <span className="font-semibold">Genre:</span> {genre}
               </p>
-            )} */}
+            )}
 
             <div className="flex flex-wrap gap-2 mt-4">
               {chapters && (

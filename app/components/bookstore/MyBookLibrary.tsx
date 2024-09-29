@@ -3,9 +3,16 @@ import Book from "./Book";
 
 const books = [
   {
-    author: "Pubkey123456", // Replace with actual Pubkey
+    author: "Pubkey123456",
     title: "1984",
-    chapterPrices: [1000, 1500, 2000], // Prices in smallest unit (e.g., lamports)
+    description: "A dystopian novel by George Orwell",
+    publishedDate: "1949-06-08",
+    genre: "Dystopian Fiction",
+    chapterPrices: [
+      { price: 1000, description: "Introduction to Oceania" },
+      { price: 1500, description: "Winston's Rebellion" },
+      { price: 2000, description: "The Party's Control" },
+    ],
     fullBookPrice: 4000,
     totalStake: 10900,
     chapters: [
@@ -20,9 +27,16 @@ const books = [
     ],
   },
   {
-    author: "Pubkey123456", // Replace with actual Pubkey
+    author: "Pubkey123456",
     title: "To Kill a Mockingbird",
-    chapterPrices: [1200, 1600, 2200], // Prices in smallest unit (e.g., lamports)
+    description: "A novel by Harper Lee about racial injustice",
+    publishedDate: "1960-07-11",
+    genre: "Classic Fiction",
+    chapterPrices: [
+      { price: 1200, description: "Scout's Childhood" },
+      { price: 1600, description: "The Trial Begins" },
+      { price: 2200, description: "Boo Radley's Revelation" },
+    ],
     fullBookPrice: 4500,
     totalStake: 9700,
     chapters: [
@@ -37,9 +51,16 @@ const books = [
     ],
   },
   {
-    author: "Pubkey123456", // Replace with actual Pubkey
+    author: "Pubkey123456",
     title: "Pride and Prejudice",
-    chapterPrices: [900, 1400, 1800], // Prices in smallest unit (e.g., lamports)
+    description: "A romantic novel by Jane Austen",
+    publishedDate: "1813-01-28",
+    genre: "Romance",
+    chapterPrices: [
+      { price: 900, description: "The Bennet Family" },
+      { price: 1400, description: "Mr. Darcy's Proposal" },
+      { price: 1800, description: "Overcoming Prejudices" },
+    ],
     fullBookPrice: 4100,
     totalStake: 11400,
     chapters: [
@@ -54,9 +75,16 @@ const books = [
     ],
   },
   {
-    author: "Pubkey123456", // Replace with actual Pubkey
+    author: "Pubkey123456",
     title: "The Great Gatsby",
-    chapterPrices: [1100, 1300, 2100], // Prices in smallest unit (e.g., lamports)
+    description: "F. Scott Fitzgerald's critique of the American Dream",
+    publishedDate: "1925-04-10",
+    genre: "Classic Fiction",
+    chapterPrices: [
+      { price: 1100, description: "Nick Meets Gatsby" },
+      { price: 1300, description: "Gatsby's Lavish Parties" },
+      { price: 2100, description: "The Tragic Conclusion" },
+    ],
     fullBookPrice: 4500,
     totalStake: 9600,
     chapters: [

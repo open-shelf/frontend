@@ -3,9 +3,17 @@ import Book from "./Book";
 
 const storeBooks = [
   {
-    author: "Pubkey123456", // Replace with actual Pubkey
+    author: "Pubkey123456",
     title: "Moby Dick",
-    chapterPrices: [1200, 1700, 2000], // Prices in smallest unit (e.g., lamports)
+    description:
+      "An epic tale of a whaling ship's quest for revenge against a giant white whale",
+    publishedDate: "1851-10-18",
+    genre: "Adventure Fiction",
+    chapterPrices: [
+      { price: 1200, description: "Ishmael's Introduction" },
+      { price: 1700, description: "The Pequod Sets Sail" },
+      { price: 2000, description: "The Final Confrontation" },
+    ],
     fullBookPrice: 4900,
     totalStake: 10500,
     chapters: [

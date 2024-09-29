@@ -8,7 +8,10 @@ import BookDetailsPopup from "./BookDetailsPopup";
 interface BookProps {
   author: string;
   title: string;
-  chapterPrices: number[];
+  description: string;
+  publishedDate: string;
+  genre: string;
+  chapterPrices: { price: number; description: string }[];
   fullBookPrice: number;
   totalStake: number;
   chapters: string[];
@@ -21,6 +24,9 @@ interface BookProps {
 export default function Book({
   author,
   title,
+  description,
+  publishedDate,
+  genre,
   chapterPrices,
   fullBookPrice,
   totalStake,
@@ -79,12 +85,15 @@ export default function Book({
         <BookDetailsPopup
           author={author}
           title={title}
+          description={description}
+          publishedDate={publishedDate}
+          genre={genre}
           chapterPrices={chapterPrices}
           fullBookPrice={fullBookPrice}
           totalStake={totalStake}
           chapters={chapters}
           stakes={stakes}
-          image={""}
+          image={image || ""}
           onClose={handleClosePopup}
         />
       )}

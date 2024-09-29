@@ -4,6 +4,9 @@ import styles from "./pdf-viewer.module.css";
 import { useBook } from "./BookContext";
 import Image from "next/image";
 import arrowImage from "./images/arrow_red.png";
+import { useWallet, useConnection } from "@solana/wallet-adapter-react";
+import { ProgramUtils } from "../../utils/programUtils";
+import { PublicKey } from "@solana/web3.js";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
@@ -28,6 +31,9 @@ const PDFViewer = () => {
   const [pdfKey, setPdfKey] = useState(0);
   const [pdfDimensions, setPdfDimensions] = useState({ width: 0, height: 0 });
   const [showStakeTooltip, setShowStakeTooltip] = useState(false);
+  const [isPurchasing, setIsPurchasing] = useState(false);
+  const wallet = useWallet();
+  const { connection } = useConnection();
 
   const initialScale = 1.2;
 
@@ -36,6 +42,9 @@ const PDFViewer = () => {
   const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
   const [nextChapter, setNextChapter] = useState<Chapter | null>(null);
   const [prevChapter, setPrevChapter] = useState<Chapter | null>(null);
+  const [purchasingChapterIndex, setPurchasingChapterIndex] = useState<
+    number | null
+  >(null);
 
   if (!bookDetails) {
     return <div>No book details available</div>;
@@ -53,7 +62,7 @@ const PDFViewer = () => {
     }
   }, [chapters]);
 
-  const handleChapterSelect = (chapter: Chapter) => {
+  const handleChapterSelect = async (chapter: Chapter) => {
     if (chapter.isPurchased) {
       setSelectedChapter(chapter);
       setPdfURL(chapter.url);
@@ -61,9 +70,48 @@ const PDFViewer = () => {
       setNumPages(null);
       setPdfKey((prevKey) => prevKey + 1);
     } else {
-      console.log(`Buying chapter ${chapter.index}`);
-      // Here you would typically make an API call to purchase the chapter
-      // For now, we'll just log the action
+      try {
+        setPurchasingChapterIndex(chapter.index);
+
+        if (!wallet.connected) {
+          throw new Error("Wallet is not connected");
+        }
+
+        console.log("Book public key:", bookDetails.bookPubKey);
+        const programUtils = new ProgramUtils(connection, wallet);
+        const bookPubKey = new PublicKey(bookDetails.bookPubKey);
+        const authorPubKey = new PublicKey(bookDetails.author);
+
+        const tx = await programUtils.purchaseChapter(
+          bookPubKey,
+          authorPubKey,
+          chapter.index
+        );
+
+        console.log(`Chapter ${chapter.index} purchased. Transaction: ${tx}`);
+
+        // Update the chapter's isPurchased status
+        const updatedChapters = chapters.map((ch) =>
+          ch.index === chapter.index ? { ...ch, isPurchased: true } : ch
+        );
+
+        // Update the bookDetails with the new chapters
+        // You might need to adjust this based on how you're managing state
+        // in your BookContext
+        // bookDetails.chapters = updatedChapters;
+
+        // Set the newly purchased chapter as the selected chapter
+        setSelectedChapter({ ...chapter, isPurchased: true });
+        setPdfURL(chapter.url);
+        setPageNumber(1);
+        setNumPages(null);
+        setPdfKey((prevKey) => prevKey + 1);
+      } catch (error) {
+        console.error("Error purchasing chapter:", error);
+        setError(`Failed to purchase chapter: ${error.message}`);
+      } finally {
+        setPurchasingChapterIndex(null);
+      }
     }
   };
 
@@ -239,9 +287,12 @@ const PDFViewer = () => {
                 className={
                   chapter.isPurchased ? styles.readButton : styles.buyButton
                 }
+                disabled={purchasingChapterIndex === chapter.index}
               >
                 {chapter.isPurchased
                   ? "Read"
+                  : purchasingChapterIndex === chapter.index
+                  ? "Purchasing..."
                   : `Buy (${chapter.price / 1e9} SOL)`}
               </button>
             </div>

@@ -13,6 +13,7 @@ interface BookDetails {
   chapters: string[];
   stakes: { staker: string; amount: number }[];
   image: string;
+  bookPubKey: string;
 }
 
 // Define the context type

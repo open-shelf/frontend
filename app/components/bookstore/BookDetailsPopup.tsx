@@ -72,6 +72,7 @@ export default function BookDetailsPopup({
       })),
       stakes,
       image,
+      bookPubKey,
     });
     router.push("/reader");
   };

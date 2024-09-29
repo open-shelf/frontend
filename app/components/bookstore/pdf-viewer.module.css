@@ -356,4 +356,17 @@
   border-color: rgba(0, 0, 0, 0.8) transparent transparent transparent;
 }
 
-/* ... rest of the existing styles ... */
+.stakeButton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  /* Add any other existing styles for the stake button */
+}
+
+.stakeSubheading {
+  font-size: 0.8em;
+  margin-top: 4px;
+  font-weight: normal;
+  /* Adjust these values as needed */
+}

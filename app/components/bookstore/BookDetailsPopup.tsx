@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { useBook } from "./BookContext";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 interface BookDetailsPopupProps {
   title: string;
@@ -10,11 +11,21 @@ interface BookDetailsPopupProps {
   description: string;
   publishedDate: string;
   genre: string;
-  chapterPrices: { price: number; description: string }[];
   fullBookPrice: number;
   totalStake: number;
-  chapters: string[];
-  stakes: { staker: string; amount: number }[];
+  bookPurchased: boolean;
+  chapters: {
+    index: number;
+    isPurchased: boolean;
+    name: string;
+    url: string;
+    price: number;
+  }[];
+  stakes: {
+    staker: string;
+    amount: number;
+    earnings: number;
+  }[];
   image: string;
   onClose: () => void;
 }
@@ -25,9 +36,9 @@ export default function BookDetailsPopup({
   description,
   publishedDate,
   genre,
-  chapterPrices,
   fullBookPrice,
   totalStake,
+  bookPurchased,
   chapters,
   stakes,
   image,
@@ -35,12 +46,12 @@ export default function BookDetailsPopup({
 }: BookDetailsPopupProps) {
   const { setBookDetails } = useBook();
   const router = useRouter();
+  const [showTooltip, setShowTooltip] = useState(false);
 
   const handleViewPDF = () => {
     setBookDetails({
       title,
       author,
-      chapterPrices,
       fullBookPrice,
       totalStake,
       chapters,
@@ -108,7 +119,7 @@ export default function BookDetailsPopup({
           </div>
           <div className="md:w-2/3">
             <h2 className="text-3xl font-bold mb-2 text-[#1D3557]">{title}</h2>
-            <p className="text-xl mb-4 text-[#457B9D]">By {author}</p>
+            {/* <p className="text-xl mb-4 text-[#457B9D]">By {author}</p> */}
             {description && <p className="mb-4 text-gray-700">{description}</p>}
             {publishedDate && (
               <p className="mb-2 text-gray-600">
@@ -121,9 +132,17 @@ export default function BookDetailsPopup({
                 <span className="font-semibold">Genre:</span> {genre}
               </p>
             )}
+            <p className="mb-2 text-gray-600">
+              <span className="font-semibold">Price:</span>{" "}
+              {fullBookPrice / 1e9} SOL
+            </p>
+            <p className="mb-4 text-gray-600">
+              <span className="font-semibold">Total Stake:</span>{" "}
+              {totalStake / 1e9} SOL
+            </p>
 
-            <div className="flex flex-wrap gap-2 mt-4">
-              {chapters && (
+            <div className="flex flex-wrap items-center gap-2 mt-4">
+              {chapters.length > 0 && (
                 <Link href="/reader">
                   <button
                     className="bg-[#1D3557] text-white px-4 py-2 rounded hover:bg-[#2A4A6D] transition-colors"
@@ -133,18 +152,63 @@ export default function BookDetailsPopup({
                   </button>
                 </Link>
               )}
-              <button
-                onClick={handleStake}
-                className="bg-[#FFD700] text-black px-4 py-2 rounded hover:bg-[#FFC300] transition-colors"
-              >
-                Stake
-              </button>
-              <button
-                onClick={handlePurchaseFullBook}
-                className="bg-[#2ecc71] text-white px-4 py-2 rounded hover:bg-[#27ae60] transition-colors"
-              >
-                Purchase Book
-              </button>
+              {!bookPurchased && (
+                <button
+                  onClick={handlePurchaseFullBook}
+                  className="bg-[#2ecc71] text-white px-4 py-2 rounded hover:bg-[#27ae60] transition-colors"
+                >
+                  Purchase Book
+                </button>
+              )}
+              {!bookPurchased && (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6 text-gray-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 7l5 5m0 0l-5 5m5-5H6"
+                  />
+                </svg>
+              )}
+              <div className="relative inline-block">
+                <button
+                  onClick={handleStake}
+                  className={`px-4 py-2 rounded transition-colors ${
+                    bookPurchased
+                      ? "bg-[#FFD700] text-black hover:bg-[#FFC300]"
+                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  }`}
+                  disabled={!bookPurchased}
+                  onMouseEnter={() => !bookPurchased && setShowTooltip(true)}
+                  onMouseLeave={() => setShowTooltip(false)}
+                >
+                  Stake
+                </button>
+                {showTooltip && !bookPurchased && (
+                  <div className="absolute z-10 w-48 px-2 py-1 -mt-1 text-sm leading-tight text-white transform -translate-x-1/2 -translate-y-full bg-gray-800 rounded-lg shadow-lg top-0 left-1/2">
+                    Purchase the book to stake
+                    <svg
+                      className="absolute z-10 w-6 h-6 text-gray-800 transform -translate-x-1/2 translate-y-1/4 fill-current stroke-current bottom-0 left-1/2"
+                      width="8"
+                      height="8"
+                    >
+                      <rect
+                        x="12"
+                        y="-10"
+                        width="8"
+                        height="8"
+                        transform="rotate(45)"
+                      />
+                    </svg>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

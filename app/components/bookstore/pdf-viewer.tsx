@@ -7,11 +7,12 @@ import arrowImage from "./images/arrow_red.png";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
-interface ChapterInfo {
+interface Chapter {
   index: number;
-  is_purchased: boolean;
+  isPurchased: boolean;
   name: string;
-  chapter_content: string | null;
+  url: string;
+  price: number;
 }
 
 const PDFViewer = () => {
@@ -32,66 +33,37 @@ const PDFViewer = () => {
 
   const { bookDetails, stakeAndPurchaseBook } = useBook();
 
-  const [chapterInfos, setChapterInfos] = useState<ChapterInfo[]>([]);
-  const [selectedChapter, setSelectedChapter] = useState<ChapterInfo | null>(
-    null
-  );
-
-  const [nextChapter, setNextChapter] = useState<ChapterInfo | null>(null);
-  const [prevChapter, setPrevChapter] = useState<ChapterInfo | null>(null);
+  const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
+  const [nextChapter, setNextChapter] = useState<Chapter | null>(null);
+  const [prevChapter, setPrevChapter] = useState<Chapter | null>(null);
 
   if (!bookDetails) {
     return <div>No book details available</div>;
   }
 
-  const {
-    title,
-    author,
-    chapterPrices,
-    fullBookPrice,
-    totalStake,
-    chapters,
-    stakes,
-    image,
-  } = bookDetails;
+  const { title, author, fullBookPrice, totalStake, chapters, stakes, image } =
+    bookDetails;
 
-  const allChaptersPurchased = chapterInfos.every(
-    (chapter) => chapter.is_purchased
-  );
+  const allChaptersPurchased = chapters.every((chapter) => chapter.isPurchased);
 
   useEffect(() => {
-    const fetchChapterInfos = async () => {
-      try {
-        const chapterInfoPromises = chapters.map((chapterUrl) =>
-          fetch(chapterUrl).then((res) => res.json())
-        );
-        const chaptersData = await Promise.all(chapterInfoPromises);
-        setChapterInfos(chaptersData);
-      } catch (error) {
-        console.error("Error fetching chapter information:", error);
-        setError("Failed to fetch chapter information");
-      }
-    };
-
-    fetchChapterInfos();
+    if (chapters.length > 0) {
+      setSelectedChapter(chapters[0]);
+      setPdfURL(chapters[0].url);
+    }
   }, [chapters]);
 
-  const handleChapterSelect = (chapter: ChapterInfo) => {
-    if (chapter.is_purchased) {
+  const handleChapterSelect = (chapter: Chapter) => {
+    if (chapter.isPurchased) {
       setSelectedChapter(chapter);
-      setPdfURL(chapter.chapter_content);
+      setPdfURL(chapter.url);
       setPageNumber(1);
       setNumPages(null);
       setPdfKey((prevKey) => prevKey + 1);
     } else {
-      console.log(`Bought chapter ${chapter.index}`);
+      console.log(`Buying chapter ${chapter.index}`);
       // Here you would typically make an API call to purchase the chapter
-      // For now, we'll just update the local state
-      setChapterInfos((prevChapters) =>
-        prevChapters.map((ch) =>
-          ch.index === chapter.index ? { ...ch, is_purchased: true } : ch
-        )
-      );
+      // For now, we'll just log the action
     }
   };
 
@@ -211,18 +183,18 @@ const PDFViewer = () => {
 
   useEffect(() => {
     if (selectedChapter) {
-      const currentIndex = chapterInfos.findIndex(
+      const currentIndex = chapters.findIndex(
         (ch) => ch.index === selectedChapter.index
       );
 
       if (currentIndex > 0) {
-        setPrevChapter(chapterInfos[currentIndex - 1]);
+        setPrevChapter(chapters[currentIndex - 1]);
       } else {
         setPrevChapter(null);
       }
 
-      if (currentIndex < chapterInfos.length - 1) {
-        setNextChapter(chapterInfos[currentIndex + 1]);
+      if (currentIndex < chapters.length - 1) {
+        setNextChapter(chapters[currentIndex + 1]);
       } else {
         setNextChapter(null);
       }
@@ -230,22 +202,22 @@ const PDFViewer = () => {
       setPrevChapter(null);
       setNextChapter(null);
     }
-  }, [selectedChapter, chapterInfos]);
+  }, [selectedChapter, chapters]);
 
   const handlePurchaseWholeBook = () => {
     if (bookDetails) {
-      stakeAndPurchaseBook(bookDetails.id);
-      console.log("Purchasing whole book:", bookDetails.id);
+      stakeAndPurchaseBook(bookDetails.title); // Assuming title can be used as an ID
+      console.log("Purchasing whole book:", bookDetails.title);
     }
   };
 
   const handleStakeClick = () => {
     if (!allChaptersPurchased) {
       setShowStakeTooltip(true);
-      setTimeout(() => setShowStakeTooltip(false), 3000); // Hide tooltip after 3 seconds
+      setTimeout(() => setShowStakeTooltip(false), 3000);
     } else if (bookDetails) {
-      stakeAndPurchaseBook(bookDetails.id);
-      console.log("Staking for book:", bookDetails.id);
+      stakeAndPurchaseBook(bookDetails.title);
+      console.log("Staking for book:", bookDetails.title);
     }
   };
 
@@ -259,16 +231,18 @@ const PDFViewer = () => {
           <h2 className={styles.bookTitle}>{title}</h2>
         </div>
         <div className={styles.chapterList}>
-          {chapterInfos.map((chapter) => (
+          {chapters.map((chapter) => (
             <div key={chapter.index} className={styles.chapterItem}>
               <span>{chapter.name}</span>
               <button
                 onClick={() => handleChapterSelect(chapter)}
                 className={
-                  chapter.is_purchased ? styles.readButton : styles.buyButton
+                  chapter.isPurchased ? styles.readButton : styles.buyButton
                 }
               >
-                {chapter.is_purchased ? "Read" : "Buy"}
+                {chapter.isPurchased
+                  ? "Read"
+                  : `Buy (${chapter.price / 1e9} SOL)`}
               </button>
             </div>
           ))}
@@ -279,7 +253,7 @@ const PDFViewer = () => {
               onClick={handlePurchaseWholeBook}
               className={styles.purchaseButton}
             >
-              Purchase Whole Book
+              Purchase Whole Book ({fullBookPrice / 1e9} SOL)
             </button>
           )}
           <div className={styles.stakeButtonWrapper}>
@@ -295,6 +269,11 @@ const PDFViewer = () => {
               disabled={!allChaptersPurchased}
             >
               Stake
+              {!allChaptersPurchased && (
+                <span className={styles.stakeSubheading}>
+                  (must be purchased first)
+                </span>
+              )}
             </button>
             {showStakeTooltip && !allChaptersPurchased && (
               <div className={styles.stakeTooltip}>
@@ -305,7 +284,7 @@ const PDFViewer = () => {
         </div>
       </div>
       <div className={styles.pdfContainer}>
-        {selectedChapter && selectedChapter.is_purchased && pdfURL ? (
+        {selectedChapter && selectedChapter.isPurchased && pdfURL ? (
           <Document
             key={pdfKey}
             file={pdfURL}
@@ -339,7 +318,7 @@ const PDFViewer = () => {
           </Document>
         ) : (
           <div className={styles.instructions}>
-            {selectedChapter && !selectedChapter.is_purchased
+            {selectedChapter && !selectedChapter.isPurchased
               ? "Please purchase this chapter to read it."
               : "Select a chapter from the sidebar to start reading."}
           </div>
@@ -364,10 +343,10 @@ const PDFViewer = () => {
             <button
               onClick={() => handleChapterSelect(prevChapter)}
               className={
-                prevChapter.is_purchased ? styles.readButton : styles.buyButton
+                prevChapter.isPurchased ? styles.readButton : styles.buyButton
               }
             >
-              {prevChapter.is_purchased ? "Read Prev" : "Buy Prev"}
+              {prevChapter.isPurchased ? "Read Prev" : "Buy Prev"}
             </button>
           )}
           <button
@@ -400,22 +379,22 @@ const PDFViewer = () => {
             <button
               onClick={() => handleChapterSelect(nextChapter)}
               className={
-                nextChapter.is_purchased ? styles.readButton : styles.buyButton
+                nextChapter.isPurchased ? styles.readButton : styles.buyButton
               }
             >
-              {nextChapter.is_purchased ? "Read Next" : "Buy Next"}
+              {nextChapter.isPurchased ? "Read Next" : "Buy Next"}
             </button>
           )}
         </div>
       </div>
       {error && <div className={styles.error}>{error}</div>}
 
-      {/* Update the debug info */}
       <div className={styles.debugInfo}>
         <p>Is Last Page: {isLastPage ? "Yes" : "No"}</p>
-        <p>Next PDF URL: {pdfURL || "None"}</p>
+        <p>Current PDF URL: {pdfURL || "None"}</p>
         <p>
-          Next Chapter Purchased: {selectedChapter?.is_purchased ? "Yes" : "No"}
+          Current Chapter Purchased:{" "}
+          {selectedChapter?.isPurchased ? "Yes" : "No"}
         </p>
         <p>
           PDF Dimensions: {pdfDimensions.width}x{pdfDimensions.height}

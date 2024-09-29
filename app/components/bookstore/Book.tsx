@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import BookDetailsPopup from "./BookDetailsPopup";
@@ -8,28 +8,40 @@ import BookDetailsPopup from "./BookDetailsPopup";
 interface BookProps {
   author: string;
   title: string;
-  description: string;
-  publishedDate: string;
-  genre: string;
-  chapterPrices: { price: number; description: string }[];
+  metaUrl: string;
   fullBookPrice: number;
   totalStake: number;
-  chapters: string[];
-  stakes: { staker: string; amount: number }[];
+  bookPurchased: boolean;
+  chapters: {
+    index: number;
+    isPurchased: boolean;
+    name: string;
+    url: string;
+    price: number;
+  }[];
+  stakes: {
+    staker: string;
+    amount: number;
+    earnings: number;
+  }[];
   showPrice: boolean;
   image?: string;
   isRounded?: boolean;
 }
 
+interface MetaData {
+  description: string;
+  publishDate: string;
+  genre: string;
+}
+
 export default function Book({
   author,
   title,
-  description,
-  publishedDate,
-  genre,
-  chapterPrices,
+  metaUrl,
   fullBookPrice,
   totalStake,
+  bookPurchased,
   chapters,
   stakes,
   showPrice,
@@ -37,6 +49,21 @@ export default function Book({
   isRounded = false,
 }: BookProps) {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [metaData, setMetaData] = useState<MetaData | null>(null);
+
+  useEffect(() => {
+    const fetchMetaData = async () => {
+      try {
+        const response = await fetch(metaUrl);
+        const data = await response.json();
+        setMetaData(data);
+      } catch (error) {
+        console.error("Error fetching meta data:", error);
+      }
+    };
+
+    fetchMetaData();
+  }, [metaUrl]);
 
   const handleBookClick = () => {
     setIsPopupOpen(true);
@@ -77,20 +104,20 @@ export default function Book({
         </span>
         {showPrice && (
           <span className="text-xs text-primary mt-1">
-            Price: {fullBookPrice} lamports
+            Price: {fullBookPrice / 1e9} SOL
           </span>
         )}
       </motion.div>
-      {isPopupOpen && (
+      {isPopupOpen && metaData && (
         <BookDetailsPopup
           author={author}
           title={title}
-          description={description}
-          publishedDate={publishedDate}
-          genre={genre}
-          chapterPrices={chapterPrices}
+          description={metaData.description}
+          publishedDate={metaData.publishDate}
+          genre={metaData.genre}
           fullBookPrice={fullBookPrice}
           totalStake={totalStake}
+          bookPurchased={bookPurchased}
           chapters={chapters}
           stakes={stakes}
           image={image || ""}

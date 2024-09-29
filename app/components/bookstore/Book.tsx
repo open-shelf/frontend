@@ -6,6 +6,7 @@ import Image from "next/image";
 import BookDetailsPopup from "./BookDetailsPopup";
 
 interface BookProps {
+  pubKey: string; // Add this line
   author: string;
   title: string;
   metaUrl: string;
@@ -36,6 +37,7 @@ interface MetaData {
 }
 
 export default function Book({
+  pubKey, // Add this line
   author,
   title,
   metaUrl,
@@ -122,6 +124,7 @@ export default function Book({
           stakes={stakes}
           image={image || ""}
           onClose={handleClosePopup}
+          bookPubKey={pubKey} // Add this line
         />
       )}
     </div>

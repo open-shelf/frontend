@@ -2,8 +2,13 @@
 import { ChevronRight } from "lucide-react";
 import Book from "./Book";
 import { useState, useEffect } from "react";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { useConnection } from "@solana/wallet-adapter-react";
+import { ProgramUtils } from "../../utils/programUtils";
+import { PublicKey } from "@solana/web3.js";
 
 interface BookData {
+  pubKey: string;
   author: string;
   title: string;
   metaUrl: string;
@@ -26,20 +31,64 @@ interface BookData {
 
 export default function MyBookLibrary() {
   const [books, setBooks] = useState<BookData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { connection } = useConnection();
+  const wallet = useWallet();
 
   useEffect(() => {
     const fetchBooks = async () => {
+      if (!wallet.publicKey) {
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
+
+      const programUtils = new ProgramUtils(connection, wallet);
+
       try {
-        const response = await fetch("http://localhost:8000/book-details-v2");
-        const data = await response.json();
-        setBooks(Array.isArray(data) ? data : [data]);
+        const demoBookPubKey = new PublicKey(
+          "9NTfQunsEruayLEHhNts8XBrWCRrVq3wSuGfyHzWzpUf"
+        );
+        const bookData = await programUtils.fetchBook(demoBookPubKey);
+        bookData.pubKey = demoBookPubKey;
+        setBooks([bookData]);
       } catch (error) {
         console.error("Error fetching books:", error);
+        setError("Failed to fetch books. Please try again later.");
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchBooks();
-  }, []);
+  }, [connection, wallet]);
+
+  if (!wallet.publicKey) {
+    return (
+      <section className="bg-background p-6 rounded-2xl shadow-md border-2 border-[#A8DADC]">
+        <p>Please connect your wallet to view your library.</p>
+      </section>
+    );
+  }
+
+  if (loading) {
+    return (
+      <section className="bg-background p-6 rounded-2xl shadow-md border-2 border-[#A8DADC]">
+        <p>Loading your library...</p>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="bg-background p-6 rounded-2xl shadow-md border-2 border-[#A8DADC]">
+        <p className="text-red-500">{error}</p>
+      </section>
+    );
+  }
 
   return (
     <section className="bg-background p-6 rounded-2xl shadow-md border-2 border-[#A8DADC]">
@@ -53,11 +102,15 @@ export default function MyBookLibrary() {
           <ChevronRight size={16} className="ml-1" />
         </a>
       </div>
-      <div className="flex space-x-6 overflow-x-auto pb-4">
-        {books.map((book, index) => (
-          <Book key={index} {...book} showPrice={false} />
-        ))}
-      </div>
+      {books.length > 0 ? (
+        <div className="flex space-x-6 overflow-x-auto pb-4">
+          {books.map((book, index) => (
+            <Book key={index} {...book} showPrice={false} />
+          ))}
+        </div>
+      ) : (
+        <p>No books found in your library.</p>
+      )}
     </section>
   );
 }

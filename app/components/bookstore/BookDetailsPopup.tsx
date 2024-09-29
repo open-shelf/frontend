@@ -4,6 +4,10 @@ import Link from "next/link";
 import { useBook } from "./BookContext";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { ProgramUtils } from "../../utils/programUtils";
+import { useConnection } from "@solana/wallet-adapter-react";
+import { PublicKey } from "@solana/web3.js";
 
 interface BookDetailsPopupProps {
   title: string;
@@ -28,6 +32,7 @@ interface BookDetailsPopupProps {
   }[];
   image: string;
   onClose: () => void;
+  bookPubKey: string; // Add this prop
 }
 
 export default function BookDetailsPopup({
@@ -43,10 +48,14 @@ export default function BookDetailsPopup({
   stakes,
   image,
   onClose,
+  bookPubKey, // Make sure this prop is included
 }: BookDetailsPopupProps) {
   const { setBookDetails } = useBook();
   const router = useRouter();
   const [showTooltip, setShowTooltip] = useState(false);
+  const { connection } = useConnection();
+  const wallet = useWallet();
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleViewPDF = () => {
     setBookDetails({
@@ -54,7 +63,13 @@ export default function BookDetailsPopup({
       author,
       fullBookPrice,
       totalStake,
-      chapters,
+      chapters: chapters.map((chapter) => ({
+        index: chapter.index,
+        isPurchased: chapter.isPurchased,
+        name: chapter.name,
+        url: chapter.url,
+        price: chapter.price,
+      })),
       stakes,
       image,
     });
@@ -65,8 +80,42 @@ export default function BookDetailsPopup({
     console.log(`Staking book: ${title}`);
   };
 
-  const handlePurchaseFullBook = () => {
-    console.log(`Purchasing full book: ${title}`);
+  const handlePurchaseFullBook = async () => {
+    console.log(bookPubKey);
+    if (!wallet.publicKey) {
+      console.error("Wallet not connected");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const programUtils = new ProgramUtils(connection, wallet);
+
+      const bookPubKeyObj = new PublicKey(bookPubKey);
+      const authorPubKeyObj = new PublicKey(author);
+
+      const tx = await programUtils.purchaseFullBook(
+        bookPubKeyObj,
+        authorPubKeyObj
+      );
+      console.log("Full book purchase transaction:", tx);
+
+      // Refresh book info
+      const updatedBookInfo = await programUtils.fetchBook(bookPubKeyObj);
+
+      console.log(updatedBookInfo);
+      // Update the local state with the new book info
+      setBookDetails({
+        ...updatedBookInfo,
+        image, // Assuming image is not part of the on-chain data
+      });
+
+      console.log("Book purchased:", updatedBookInfo.bookPurchased);
+    } catch (error) {
+      console.error("Error purchasing full book:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -155,9 +204,12 @@ export default function BookDetailsPopup({
               {!bookPurchased && (
                 <button
                   onClick={handlePurchaseFullBook}
-                  className="bg-[#2ecc71] text-white px-4 py-2 rounded hover:bg-[#27ae60] transition-colors"
+                  className={`bg-[#2ecc71] text-white px-4 py-2 rounded hover:bg-[#27ae60] transition-colors ${
+                    isLoading ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
+                  disabled={isLoading}
                 >
-                  Purchase Book
+                  {isLoading ? "Processing..." : "Purchase Book"}
                 </button>
               )}
               {!bookPurchased && (

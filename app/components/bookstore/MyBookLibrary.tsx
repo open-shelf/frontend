@@ -21,6 +21,7 @@ interface BookData {
     name: string;
     url: string;
     price: number;
+    owner: string;
   }[];
   stakes: {
     staker: string;
@@ -49,20 +50,33 @@ export default function MyBookLibrary() {
       const programUtils = new ProgramUtils(connection, wallet);
 
       try {
-        // Fetch all book public keys from the API
-        const response = await fetch("http://localhost:8000/books");
-        const bookPubKeys = await response.json();
+        // Fetch all books data from the program
+        const allBooks = await programUtils.fetchAllBooks();
 
-        // Fetch book data for each public key using a for loop
-        const fetchedBooks: BookData[] = [];
-        for (const pubKey of bookPubKeys) {
-          const bookPubKey = new PublicKey(pubKey);
-          const bookData = await programUtils.fetchBook(bookPubKey);
-          fetchedBooks.push({ ...bookData, pubKey });
-        }
+        console.log("All books:", allBooks);
 
-        console.log(fetchedBooks);
-        setBooks(fetchedBooks);
+        // Filter books that belong to the user's library
+        const userLibrary = allBooks.filter((book) => {
+          // Check if the book is fully purchased
+          if (book.bookPurchased) {
+            return true;
+          }
+
+          // Check if any chapter is purchased
+          const hasAnyChapterPurchased = book.chapters.some(
+            (chapter) => chapter.isPurchased
+          );
+
+          // Check if the user has staked in this book
+          const hasUserStaked = book.stakes.some(
+            (stake) => stake.staker === wallet.publicKey?.toString()
+          );
+
+          return hasAnyChapterPurchased || hasUserStaked;
+        });
+
+        console.log("User library:", userLibrary);
+        setBooks(userLibrary);
       } catch (error) {
         console.error("Error fetching books:", error);
         setError("Failed to fetch books. Please try again later.");
@@ -104,21 +118,23 @@ export default function MyBookLibrary() {
         <h2 className="text-2xl font-bold text-gray-900">My Library</h2>
         <a
           href="#"
-          className="text-primary hover:underline flex items-center transition-colors duration-200"
+          className="text-primary hover:underline flex items-center transition-colors duration-200 text-gray-900"
         >
           View All
           <ChevronRight size={16} className="ml-1" />
         </a>
       </div>
-      {books.length > 0 ? (
-        <div className="flex space-x-6 overflow-x-auto pb-4">
-          {books.map((book, index) => (
+      <div className="flex space-x-6 overflow-x-auto pb-4 min-h-[200px]">
+        {books.length > 0 ? (
+          books.map((book, index) => (
             <Book key={index} {...book} showPrice={false} />
-          ))}
-        </div>
-      ) : (
-        <p>No books found in your library.</p>
-      )}
+          ))
+        ) : (
+          <p className="self-center text-gray-900">
+            No books found in your library.
+          </p>
+        )}
+      </div>
     </section>
   );
 }

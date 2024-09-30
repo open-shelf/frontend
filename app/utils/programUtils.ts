@@ -139,4 +139,23 @@ export class ProgramUtils {
   async getLastAddedBookPubKey(): Promise<PublicKey | null> {
     return this.lastAddedBookPubKey;
   }
+
+  async fetchAllBooks(): Promise<BookData[]> {
+    // Fetch all book public keys from the program
+    // const bookPubKeys = await this.program.account.book.all();
+
+    // Fetch all book public keys from the API
+    const response = await fetch("http://localhost:8000/books");
+    const bookPubKeys = await response.json();
+
+    // Fetch book data for each public key using a for loop
+    const fetchedBooks: BookData[] = [];
+    for (const pubKey of bookPubKeys) {
+      const bookPubKey = new PublicKey(pubKey);
+      const bookData = await this.fetchBook(bookPubKey);
+      fetchedBooks.push({ ...bookData, pubKey });
+    }
+
+    return fetchedBooks
+  }
 }

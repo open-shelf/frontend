@@ -49,17 +49,34 @@ export default function StoreBook() {
       const programUtils = new ProgramUtils(connection, wallet);
 
       try {
-        const demoBookPubKey = new PublicKey(
-          "7dxU3uNTaSr5PvkA3o26EAWJAGRN4Xr1Rp2BwGbjDDv8"
-        );
-        const bookData = await programUtils.fetchBook(demoBookPubKey);
+        // Fetch all books data from the program
+        const allBooks = await programUtils.fetchAllBooks();
 
-        setStoreBooks([
-          {
-            ...bookData,
-            pubKey: demoBookPubKey.toString(), // Add this line
-          },
-        ]);
+        console.log("All books:", allBooks);
+
+        // Filter books that are available in the store
+        const storeBooks = allBooks.filter((book) => {
+          // Exclude fully purchased books
+          if (book.bookPurchased) {
+            return false;
+          }
+
+          // Check if any chapter is purchased by the user
+          const hasUserPurchasedChapter = book.chapters.some(
+            (chapter) => chapter.isPurchased
+          );
+
+          // Check if the user has staked in this book
+          const hasUserStaked = book.stakes.some(
+            (stake) => stake.staker === wallet.publicKey?.toString()
+          );
+
+          // Include the book if the user hasn't purchased any chapters or staked in it
+          return !hasUserPurchasedChapter && !hasUserStaked;
+        });
+
+        console.log("Store books:", storeBooks);
+        setStoreBooks(storeBooks);
       } catch (error) {
         console.error("Error fetching books:", error);
         setError("Failed to fetch books. Please try again later.");

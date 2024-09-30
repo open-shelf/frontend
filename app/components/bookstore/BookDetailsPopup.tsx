@@ -102,6 +102,8 @@ export default function BookDetailsPopup({
       );
       console.log("Full book purchase transaction:", tx);
 
+      await new Promise((f) => setTimeout(f, 5000));
+
       // Refresh book info
       const updatedBookInfo = await programUtils.fetchBook(bookPubKeyObj);
 

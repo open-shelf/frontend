@@ -58,6 +58,7 @@ const PDFViewer = () => {
   const [isUserStaked, setIsUserStaked] = useState(false);
   const [userStakeAmount, setUserStakeAmount] = useState<number>(0);
   const [userRewards, setUserRewards] = useState<number>(0);
+  const [isClaimingReward, setIsClaimingReward] = useState(false);
 
   if (!bookDetails) {
     return <div>No book details available</div>;
@@ -391,6 +392,8 @@ const PDFViewer = () => {
         );
         console.log(`Staked on book. Transaction: ${tx}`);
 
+        await new Promise((f) => setTimeout(f, 5000));
+
         // Fetch updated book info
         const updatedBookInfo = await programUtils.fetchBook(bookPubKey);
 
@@ -425,6 +428,60 @@ const PDFViewer = () => {
     }
     // Close the popup after staking
     handleClosePopup();
+  };
+
+  const handleClaimReward = async () => {
+    if (bookDetails && wallet.connected && userRewards > 0) {
+      try {
+        setIsClaimingReward(true);
+        const programUtils = new ProgramUtils(connection, wallet);
+        const bookPubKey = new PublicKey(bookDetails.bookPubKey);
+
+        // Call the claimReward function
+        const tx = await programUtils.claimStakeEarnings(bookPubKey);
+        console.log(`Earning claimed. Transaction: ${tx}`);
+
+        await new Promise((f) => setTimeout(f, 5000));
+
+        // Fetch updated book info
+        const updatedBookInfo = await programUtils.fetchBook(bookPubKey);
+
+        console.log("updated book info", updatedBookInfo);
+
+        // Update the local state with the new book info
+        setBookDetails({
+          ...updatedBookInfo,
+        });
+
+        // Update user's stake information
+        const userStake = updatedBookInfo.stakes.find(
+          (stake) => stake.staker.toString() === wallet.publicKey?.toString()
+        );
+
+        if (userStake) {
+          setUserStakeAmount(userStake.amount);
+          setUserRewards(0); // Reset rewards after claiming
+        } else {
+          // If user stake is not found, reset both stake amount and rewards
+          setUserStakeAmount(0);
+          setUserRewards(0);
+        }
+
+        console.log("Successfully claimed reward for book:", bookDetails.title);
+      } catch (error) {
+        console.error("Error claiming reward:", error);
+        let errorMessage = "Failed to claim reward";
+        if (error instanceof Error) {
+          const match = error.message.match(/Error Message: (.+)$/);
+          if (match) {
+            errorMessage = match[1];
+          }
+        }
+        setError(errorMessage);
+      } finally {
+        setIsClaimingReward(false);
+      }
+    }
   };
 
   useEffect(() => {
@@ -616,6 +673,15 @@ const PDFViewer = () => {
                 <p>
                   <strong>Rewards Earned:</strong> {userRewards / 1e9} SOL
                 </p>
+                {userRewards > 0 && (
+                  <button
+                    onClick={handleClaimReward}
+                    disabled={isClaimingReward}
+                    className={styles.claimRewardButton}
+                  >
+                    {isClaimingReward ? "Claiming..." : "Claim Reward"}
+                  </button>
+                )}
               </div>
             ) : (
               <form onSubmit={handleStakeSubmit}>

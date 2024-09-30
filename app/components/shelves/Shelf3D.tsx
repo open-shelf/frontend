@@ -6,6 +6,7 @@ import Shelf from "./Shelf";
 import BookShelf from "./BookShelf"; // Importing BookShelf component
 import VinylShelf from "./VinylShelf"; // Importing VinylShelf component
 import ConsoleShelf from "./ConsoleShelf"; // Importing ConsoleShelf component
+import WalletConnectButton from "../WalletConnectButton";
 
 const Shelf3D: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -98,6 +99,7 @@ const Shelf3D: React.FC = () => {
             <br></br>
             Pay for What You Use, <br></br>Stake and Earn on What You Love
           </div>
+          <WalletConnectButton />
         </motion.div>
 
         {/* Main White Box */}

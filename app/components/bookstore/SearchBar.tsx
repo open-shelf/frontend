@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Search, X, ChevronDown } from "lucide-react";
-
+import WalletConnectButton from "../WalletConnectButton";
 export default function SearchBar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
@@ -36,10 +36,7 @@ export default function SearchBar() {
             </button>
           )}
         </div>
-        <button className="flex items-center space-x-2 bg-white rounded-xl px-4 py-2 border border-gray-300 hover:bg-gray-50 transition-colors duration-200 hover:bg-[#c81d2a] bg-[#E63946]">
-          <span>Kenson</span>
-          <ChevronDown size={16} />
-        </button>
+        <WalletConnectButton />
       </div>
     </div>
   );

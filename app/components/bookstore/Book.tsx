@@ -34,6 +34,7 @@ interface MetaData {
   description: string;
   publishDate: string;
   genre: string;
+  bookImg: string; // Add this new field
 }
 
 export default function Book({
@@ -88,7 +89,14 @@ export default function Book({
             isRounded ? "rounded-full" : "rounded-xl"
           }`}
         >
-          {image ? (
+          {metaData && metaData.bookImg ? (
+            <Image
+              src={metaData.bookImg}
+              alt={title}
+              layout="fill"
+              objectFit="cover"
+            />
+          ) : image ? (
             <Image src={image} alt={title} layout="fill" objectFit="cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center p-2">
@@ -122,7 +130,7 @@ export default function Book({
           bookPurchased={bookPurchased}
           chapters={chapters}
           stakes={stakes}
-          image={image || ""}
+          image={metaData.bookImg || image || ""}
           onClose={handleClosePopup}
           bookPubKey={pubKey} // Add this line
         />

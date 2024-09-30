@@ -19,13 +19,13 @@ const WalletConnectButton = () => {
       <WalletMultiButton />
       <style jsx global>{`
         .wallet-adapter-button {
-          background-color: #512da8;
+          background-color: #e63946;
           color: white;
           font-size: 14px;
           font-weight: 600;
         }
         .wallet-adapter-button:hover {
-          background-color: #673ab7;
+          background-color: #e63946;
         }
       `}</style>
     </div>

@@ -38,7 +38,7 @@ const PDFViewer = () => {
 
   const initialScale = 1.2;
 
-  const { bookDetails, stakeAndPurchaseBook } = useBook();
+  const { bookDetails, setBookDetails, stakeAndPurchaseBook } = useBook();
 
   const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
   const [nextChapter, setNextChapter] = useState<Chapter | null>(null);
@@ -50,6 +50,8 @@ const PDFViewer = () => {
   const [chapters, setChapters] = useState<Chapter[]>(
     bookDetails?.chapters || []
   );
+
+  const [isPurchasingWholeBook, setIsPurchasingWholeBook] = useState(false);
 
   if (!bookDetails) {
     return <div>No book details available</div>;
@@ -94,6 +96,14 @@ const PDFViewer = () => {
         );
 
         console.log(`Chapter ${chapter.index} purchased. Transaction: ${tx}`);
+
+        const updatedBookInfo = await programUtils.fetchBook(bookPubKey);
+
+        console.log("updated book info", updatedBookInfo);
+        // Update the local state with the new book info
+        setBookDetails({
+          ...updatedBookInfo,
+        });
 
         // Update the chapters state with the newly purchased chapter
         const updatedChapters = chapters.map((ch) =>
@@ -264,10 +274,62 @@ const PDFViewer = () => {
     }
   }, [selectedChapter, chapters]);
 
-  const handlePurchaseWholeBook = () => {
+  const handlePurchaseWholeBook = async () => {
     if (bookDetails) {
-      stakeAndPurchaseBook(bookDetails.title); // Assuming title can be used as an ID
-      console.log("Purchasing whole book:", bookDetails.title);
+      try {
+        setIsPurchasingWholeBook(true);
+
+        if (!wallet.connected) {
+          throw new Error("Wallet is not connected");
+        }
+
+        const programUtils = new ProgramUtils(connection, wallet);
+        const bookPubKey = new PublicKey(bookDetails.bookPubKey);
+        const authorPubKey = new PublicKey(bookDetails.author);
+
+        // Purchase the whole book
+        const tx = await programUtils.purchaseFullBook(
+          bookPubKey,
+          authorPubKey
+        );
+        console.log(`Whole book purchased. Transaction: ${tx}`);
+
+        // Fetch updated book info
+        const updatedBookInfo = await programUtils.fetchBook(bookPubKey);
+
+        // Update the local state with the new book info
+        setBookDetails({
+          ...updatedBookInfo,
+        });
+
+        // Update all chapters to be purchased
+        const updatedChapters = chapters.map((ch) => ({
+          ...ch,
+          isPurchased: true,
+        }));
+        setChapters(updatedChapters);
+
+        // Set the first chapter as the selected chapter
+        setSelectedChapter(updatedChapters[0]);
+        setPdfURL(updatedChapters[0].url);
+        setPageNumber(1);
+        setNumPages(null);
+        setPdfKey((prevKey) => prevKey + 1);
+
+        console.log("Whole book purchased successfully:", bookDetails.title);
+      } catch (error) {
+        console.error("Error purchasing whole book:", error);
+        let errorMessage = "Failed to purchase the whole book";
+        if (error instanceof Error) {
+          const match = error.message.match(/Error Message: (.+)$/);
+          if (match) {
+            errorMessage = match[1];
+          }
+        }
+        setError(errorMessage);
+      } finally {
+        setIsPurchasingWholeBook(false);
+      }
     }
   };
 
@@ -325,8 +387,9 @@ const PDFViewer = () => {
             <button
               onClick={handlePurchaseWholeBook}
               className={styles.purchaseButton}
+              disabled={isPurchasingWholeBook}
             >
-              Purchase Whole Book ({fullBookPrice / 1e9} SOL)
+              {isPurchasingWholeBook ? "Purchasing..." : `Purchase Full Book`}
             </button>
           )}
           <button

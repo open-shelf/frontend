@@ -90,6 +90,7 @@ export default function BookDetailsPopup({
 
     setIsLoading(true);
     try {
+      console.log(bookPubKey);
       const programUtils = new ProgramUtils(connection, wallet);
 
       const bookPubKeyObj = new PublicKey(bookPubKey);

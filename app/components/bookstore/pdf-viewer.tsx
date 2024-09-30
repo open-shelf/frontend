@@ -124,6 +124,8 @@ const PDFViewer = () => {
 
         const updatedBookInfo = await programUtils.fetchBook(bookPubKey);
 
+        updatedBookInfo.bookPubKey = bookPubKey;
+
         console.log("updated book info", updatedBookInfo);
         // Update the local state with the new book info
         setBookDetails({
@@ -322,6 +324,8 @@ const PDFViewer = () => {
         // Fetch updated book info
         const updatedBookInfo = await programUtils.fetchBook(bookPubKey);
 
+        updatedBookInfo.bookPubKey = bookPubKey;
+
         // Update the local state with the new book info
         setBookDetails({
           ...updatedBookInfo,
@@ -397,6 +401,8 @@ const PDFViewer = () => {
         // Fetch updated book info
         const updatedBookInfo = await programUtils.fetchBook(bookPubKey);
 
+        updatedBookInfo.bookPubKey = bookPubKey;
+
         // Update the local state with the new book info
         setBookDetails({
           ...updatedBookInfo,
@@ -445,6 +451,8 @@ const PDFViewer = () => {
 
         // Fetch updated book info
         const updatedBookInfo = await programUtils.fetchBook(bookPubKey);
+
+        updatedBookInfo.bookPubKey = bookPubKey;
 
         console.log("updated book info", updatedBookInfo);
 

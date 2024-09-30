@@ -50,7 +50,7 @@ export default function MyBookLibrary() {
 
       try {
         const demoBookPubKey = new PublicKey(
-          "9NTfQunsEruayLEHhNts8XBrWCRrVq3wSuGfyHzWzpUf"
+          "7dxU3uNTaSr5PvkA3o26EAWJAGRN4Xr1Rp2BwGbjDDv8"
         );
         const bookData = await programUtils.fetchBook(demoBookPubKey);
         bookData.pubKey = demoBookPubKey;

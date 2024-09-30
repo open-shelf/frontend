@@ -311,8 +311,8 @@
 }
 
 .stakeButton {
-  background-color: #f1c40f;
-  color: #9c7e06;
+  background-color: #bdc3c7; /* Default disabled color */
+  color: #7f8c8d; /* Default disabled text color */
   padding: 10px 15px;
   border: none;
   border-radius: 5px;
@@ -323,10 +323,17 @@
   align-items: center;
   justify-content: center;
   font-weight: bold;
+  width: 100%;
+  margin: 5px 0;
+}
+
+.stakeButton:not(:disabled) {
+  background-color: #ffd700; /* Golden color when enabled */
+  color: #000000; /* Black text for better contrast on gold */
 }
 
 .stakeButton:hover:not(:disabled) {
-  background-color: #f39c12;
+  background-color: #ffcc00; /* Slightly darker gold on hover */
 }
 
 .stakeButton:disabled {
@@ -420,4 +427,155 @@
 @keyframes fadeOut {
   from { opacity: 1; }
   to { opacity: 0; }
+}
+
+.popupOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.popup {
+  background-color: #f5f5f5;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  max-width: 400px;
+  width: 100%;
+  color: #333;
+  position: relative;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.closeButton {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  line-height: 1;
+  transition: color 0.3s ease;
+}
+
+.closeButton:hover {
+  color: #f44336;
+}
+
+.popup h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #1a1a1a;
+  font-size: 1.4em;
+  font-weight: 600;
+}
+
+.popup form {
+  display: flex;
+  flex-direction: column;
+}
+
+.popup input {
+  margin-bottom: 15px;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  color: #333;
+  font-size: 1em;
+  transition: border-color 0.3s ease;
+}
+
+.popup input:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+.popup p {
+  margin: 10px 0;
+  color: #444;
+  font-size: 1.1em;
+}
+
+.popupButtons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.popupButtons button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1em;
+  transition: background-color 0.3s ease, transform 0.1s ease;
+}
+
+.popupButtons button:hover {
+  transform: translateY(-2px);
+}
+
+.popupButtons button:active {
+  transform: translateY(0);
+}
+
+.popupButtons button[type="submit"] {
+  background-color: #3498db;
+  color: white;
+}
+
+.popupButtons button[type="submit"]:hover {
+  background-color: #2980b9;
+}
+
+.popupButtons button[type="button"] {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.popupButtons button[type="button"]:hover {
+  background-color: #c0392b;
+}
+
+/* Stake details styles */
+.stakeDetails {
+  background-color: #fff;
+  border-radius: 6px;
+  padding: 15px;
+  margin-top: 15px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.stakeDetails p {
+  margin: 10px 0;
+  font-size: 1.1em;
+  color: #333;
+}
+
+.stakeDetails strong {
+  color: #2c3e50;
+  font-weight: 600;
 }

@@ -51,7 +51,13 @@ const PDFViewer = () => {
     bookDetails?.chapters || []
   );
 
+  const [stakeAmount, setStakeAmount] = useState<string>("");
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+
   const [isPurchasingWholeBook, setIsPurchasingWholeBook] = useState(false);
+  const [isUserStaked, setIsUserStaked] = useState(false);
+  const [userStakeAmount, setUserStakeAmount] = useState<number>(0);
+  const [userRewards, setUserRewards] = useState<number>(0);
 
   if (!bookDetails) {
     return <div>No book details available</div>;
@@ -68,6 +74,24 @@ const PDFViewer = () => {
       setPdfURL(chapters[0].url);
     }
   }, [chapters]);
+
+  useEffect(() => {
+    if (bookDetails && wallet.publicKey) {
+      // Check if the user has already staked
+      const userStake = bookDetails.stakes.find(
+        (stake) => stake.staker.toString() === wallet.publicKey?.toString()
+      );
+      if (userStake) {
+        setIsUserStaked(true);
+        setUserStakeAmount(userStake.amount);
+        setUserRewards(userStake.earnings);
+      } else {
+        setIsUserStaked(false);
+        setUserStakeAmount(0);
+        setUserRewards(0);
+      }
+    }
+  }, [bookDetails, wallet.publicKey]);
 
   const handleChapterSelect = async (chapter: Chapter) => {
     if (chapter.isPurchased) {
@@ -333,11 +357,74 @@ const PDFViewer = () => {
     }
   };
 
+  const handleClosePopup = () => {
+    setIsPopupOpen(false);
+    setStakeAmount("");
+  };
+
   const handleStakeClick = () => {
-    if (allChaptersPurchased && bookDetails) {
-      stakeAndPurchaseBook(bookDetails.title);
-      console.log("Staking for book:", bookDetails.title);
+    if (isUserStaked) {
+      // Show stake details
+      setIsPopupOpen(true);
+    } else {
+      // Show stake input popup
+      setIsPopupOpen(true);
     }
+  };
+
+  const handleStakeSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isUserStaked && bookDetails) {
+      try {
+        if (!wallet.connected) {
+          throw new Error("Wallet is not connected");
+        }
+
+        const programUtils = new ProgramUtils(connection, wallet);
+        const bookPubKey = new PublicKey(bookDetails.bookPubKey);
+        const stakeAmountLamports = Math.floor(parseFloat(stakeAmount) * 1e9); // Convert SOL to lamports
+
+        // Call the stakeOnBook function
+        const tx = await programUtils.stakeOnBook(
+          bookPubKey,
+          stakeAmountLamports
+        );
+        console.log(`Staked on book. Transaction: ${tx}`);
+
+        // Fetch updated book info
+        const updatedBookInfo = await programUtils.fetchBook(bookPubKey);
+
+        // Update the local state with the new book info
+        setBookDetails({
+          ...updatedBookInfo,
+        });
+
+        // Update user's stake information
+        const userStake = updatedBookInfo.stakes.find(
+          (stake) => stake.staker.toString() === wallet.publicKey?.toString()
+        );
+
+        if (userStake) {
+          setIsUserStaked(true);
+          setUserStakeAmount(userStake.amount);
+          setUserRewards(0); // Reset rewards for new stake
+        }
+
+        console.log("Successfully staked on book:", bookDetails.title);
+      } catch (error) {
+        console.error("Error staking on book:", error);
+        let errorMessage = "Failed to stake on the book";
+        if (error instanceof Error) {
+          const match = error.message.match(/Error Message: (.+)$/);
+          if (match) {
+            errorMessage = match[1];
+          }
+        }
+        setError(errorMessage);
+      }
+    }
+    // Close the popup after staking
+    handleClosePopup();
   };
 
   useEffect(() => {
@@ -399,7 +486,7 @@ const PDFViewer = () => {
             }`}
             disabled={!allChaptersPurchased}
           >
-            Stake
+            {isUserStaked ? "View Stake" : "Stake"}
             {!allChaptersPurchased && (
               <span className={styles.stakeSubheading}>
                 (must be purchased first)
@@ -498,7 +585,7 @@ const PDFViewer = () => {
             +
           </button>
           <button onClick={toggleSideBySide} className={styles.button}>
-            {isSideBySide ? "Single" : "Double"}
+            {isSideBySide ? "One page View" : "Two Page view"}
           </button>
           {nextChapter && (
             <button
@@ -514,7 +601,47 @@ const PDFViewer = () => {
       </div>
       {error && <div className={styles.errorOverlay}>{error}</div>}
 
-      <div className={styles.debugInfo}>
+      {isPopupOpen && (
+        <div className={styles.popupOverlay}>
+          <div className={styles.popup}>
+            <button onClick={handleClosePopup} className={styles.closeButton}>
+              &times;
+            </button>
+            <h3>{isUserStaked ? "Your Stake Details" : "Stake SOL"}</h3>
+            {isUserStaked ? (
+              <div className={styles.stakeDetails}>
+                <p>
+                  <strong>Staked Amount:</strong> {userStakeAmount / 1e9} SOL
+                </p>
+                <p>
+                  <strong>Rewards Earned:</strong> {userRewards / 1e9} SOL
+                </p>
+              </div>
+            ) : (
+              <form onSubmit={handleStakeSubmit}>
+                <input
+                  type="number"
+                  value={stakeAmount}
+                  onChange={(e) => setStakeAmount(e.target.value)}
+                  placeholder="Enter stake amount in SOL"
+                  min="0"
+                  step="0.1"
+                  required
+                />
+                <div className={styles.popupButtons}>
+                  <button type="submit">Stake</button>
+                  <button type="button" onClick={handleClosePopup}>
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* DEBUG INFO */}
+      {/* <div className={styles.debugInfo}>
         <p>Is Last Page: {isLastPage ? "Yes" : "No"}</p>
         <p>Current PDF URL: {pdfURL || "None"}</p>
         <p>
@@ -525,7 +652,7 @@ const PDFViewer = () => {
           PDF Dimensions: {pdfDimensions.width}x{pdfDimensions.height}
         </p>
         <p>Current Scale: {scale.toFixed(2)}</p>
-      </div>
+      </div> */}
     </div>
   );
 };

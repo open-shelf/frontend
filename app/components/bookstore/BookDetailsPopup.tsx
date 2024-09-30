@@ -98,6 +98,7 @@ export default function BookDetailsPopup({
       stakes,
       image,
       bookPubKey,
+      bookPurchased: isBookPurchased, // Add this line
     });
     router.push("/reader");
   };
@@ -236,10 +237,12 @@ export default function BookDetailsPopup({
 
       console.log(updatedBookInfo);
       // Update the local state with the new book info
-      setBookDetails({
+      const updatedBookDetails = {
         ...updatedBookInfo,
-        image, // Assuming image is not part of the on-chain data
-      });
+        image,
+        bookPurchased: true, // Add this line
+      };
+      setBookDetails(updatedBookDetails);
 
       // Update the local purchase state
       setIsBookPurchased(true);

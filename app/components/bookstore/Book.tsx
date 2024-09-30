@@ -57,7 +57,8 @@ export default function Book({
   useEffect(() => {
     const fetchMetaData = async () => {
       try {
-        const response = await fetch(metaUrl);
+        const metaUrlPubKey = metaUrl + "/" + pubKey;
+        const response = await fetch(metaUrlPubKey);
         const data = await response.json();
         setMetaData(data);
       } catch (error) {

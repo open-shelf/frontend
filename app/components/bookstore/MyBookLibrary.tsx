@@ -49,12 +49,20 @@ export default function MyBookLibrary() {
       const programUtils = new ProgramUtils(connection, wallet);
 
       try {
-        const demoBookPubKey = new PublicKey(
-          "7dxU3uNTaSr5PvkA3o26EAWJAGRN4Xr1Rp2BwGbjDDv8"
-        );
-        const bookData = await programUtils.fetchBook(demoBookPubKey);
-        bookData.pubKey = demoBookPubKey;
-        setBooks([bookData]);
+        // Fetch all book public keys from the API
+        const response = await fetch("http://localhost:8000/books");
+        const bookPubKeys = await response.json();
+
+        // Fetch book data for each public key using a for loop
+        const fetchedBooks: BookData[] = [];
+        for (const pubKey of bookPubKeys) {
+          const bookPubKey = new PublicKey(pubKey);
+          const bookData = await programUtils.fetchBook(bookPubKey);
+          fetchedBooks.push({ ...bookData, pubKey });
+        }
+
+        console.log(fetchedBooks);
+        setBooks(fetchedBooks);
       } catch (error) {
         console.error("Error fetching books:", error);
         setError("Failed to fetch books. Please try again later.");

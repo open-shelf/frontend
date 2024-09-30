@@ -43,7 +43,7 @@ export default function BookDetailsPopup({
   genre,
   fullBookPrice,
   totalStake,
-  bookPurchased,
+  bookPurchased: initialBookPurchased,
   chapters,
   stakes,
   image,
@@ -56,6 +56,7 @@ export default function BookDetailsPopup({
   const { connection } = useConnection();
   const wallet = useWallet();
   const [isLoading, setIsLoading] = useState(false);
+  const [isBookPurchased, setIsBookPurchased] = useState(initialBookPurchased);
 
   const handleViewPDF = () => {
     setBookDetails({
@@ -113,6 +114,9 @@ export default function BookDetailsPopup({
         ...updatedBookInfo,
         image, // Assuming image is not part of the on-chain data
       });
+
+      // Update the local purchase state
+      setIsBookPurchased(true);
 
       console.log("Book purchased:", updatedBookInfo.bookPurchased);
     } catch (error) {
@@ -205,7 +209,7 @@ export default function BookDetailsPopup({
                   </button>
                 </Link>
               )}
-              {!bookPurchased && (
+              {!isBookPurchased ? (
                 <button
                   onClick={handlePurchaseFullBook}
                   className={`bg-[#2ecc71] text-white px-4 py-2 rounded hover:bg-[#27ae60] transition-colors ${
@@ -215,8 +219,10 @@ export default function BookDetailsPopup({
                 >
                   {isLoading ? "Processing..." : "Purchase Book"}
                 </button>
+              ) : (
+                <p className="text-green-600 font-semibold"></p>
               )}
-              {!bookPurchased && (
+              {!isBookPurchased && (
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-6 w-6 text-gray-400"
@@ -236,17 +242,17 @@ export default function BookDetailsPopup({
                 <button
                   onClick={handleStake}
                   className={`px-4 py-2 rounded transition-colors ${
-                    bookPurchased
+                    isBookPurchased
                       ? "bg-[#FFD700] text-black hover:bg-[#FFC300]"
                       : "bg-gray-300 text-gray-500 cursor-not-allowed"
                   }`}
-                  disabled={!bookPurchased}
-                  onMouseEnter={() => !bookPurchased && setShowTooltip(true)}
+                  disabled={!isBookPurchased}
+                  onMouseEnter={() => !isBookPurchased && setShowTooltip(true)}
                   onMouseLeave={() => setShowTooltip(false)}
                 >
                   Stake
                 </button>
-                {showTooltip && !bookPurchased && (
+                {showTooltip && !isBookPurchased && (
                   <div className="absolute z-10 w-48 px-2 py-1 -mt-1 text-sm leading-tight text-white transform -translate-x-1/2 -translate-y-full bg-gray-800 rounded-lg shadow-lg top-0 left-1/2">
                     Purchase the book to stake
                     <svg

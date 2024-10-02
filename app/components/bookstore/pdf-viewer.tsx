@@ -8,6 +8,7 @@ import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 import { ProgramUtils } from "../../utils/programUtils";
 import { PublicKey } from "@solana/web3.js";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+import StakePopup from "./StakePopup";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
@@ -59,6 +60,24 @@ const PDFViewer = () => {
   const [userStakeAmount, setUserStakeAmount] = useState<number>(0);
   const [userRewards, setUserRewards] = useState<number>(0);
   const [isClaimingReward, setIsClaimingReward] = useState(false);
+
+  const [isStakePopupOpen, setIsStakePopupOpen] = useState(false);
+
+  const handleStake = () => {
+    setIsStakePopupOpen(true);
+  };
+
+  const handleCloseStakePopup = () => {
+    setIsStakePopupOpen(false);
+  };
+
+  const handleStakeSuccess = (updatedBookInfo: any) => {
+    setBookDetails({
+      ...updatedBookInfo,
+      image: bookDetails.image,
+      bookPurchased: bookDetails.bookPurchased,
+    });
+  };
 
   if (!bookDetails) {
     return <div>No book details available</div>;
@@ -545,7 +564,7 @@ const PDFViewer = () => {
             </button>
           )}
           <button
-            onClick={handleStakeClick}
+            onClick={handleStake}
             className={`${styles.stakeButton} ${
               !allChaptersPurchased ? styles.disabledStake : ""
             }`}
@@ -666,53 +685,14 @@ const PDFViewer = () => {
       </div>
       {error && <div className={styles.errorOverlay}>{error}</div>}
 
-      {isPopupOpen && (
-        <div className={styles.popupOverlay}>
-          <div className={styles.popup}>
-            <button onClick={handleClosePopup} className={styles.closeButton}>
-              &times;
-            </button>
-            <h3>{isUserStaked ? "Your Stake Details" : "Stake SOL"}</h3>
-            {isUserStaked ? (
-              <div className={styles.stakeDetails}>
-                <p>
-                  <strong>Staked Amount:</strong> {userStakeAmount / 1e9} SOL
-                </p>
-                <p>
-                  <strong>Rewards Earned:</strong> {userRewards / 1e9} SOL
-                </p>
-                {userRewards > 0 && (
-                  <button
-                    onClick={handleClaimReward}
-                    disabled={isClaimingReward}
-                    className={styles.claimRewardButton}
-                  >
-                    {isClaimingReward ? "Claiming..." : "Claim Reward"}
-                  </button>
-                )}
-              </div>
-            ) : (
-              <form onSubmit={handleStakeSubmit}>
-                <input
-                  type="number"
-                  value={stakeAmount}
-                  onChange={(e) => setStakeAmount(e.target.value)}
-                  placeholder="Enter stake amount in SOL"
-                  min="0"
-                  step="0.1"
-                  required
-                />
-                <div className={styles.popupButtons}>
-                  <button type="submit">Stake</button>
-                  <button type="button" onClick={handleClosePopup}>
-                    Cancel
-                  </button>
-                </div>
-              </form>
-            )}
-          </div>
-        </div>
-      )}
+      <StakePopup
+        isOpen={isStakePopupOpen}
+        onClose={handleCloseStakePopup}
+        bookPubKey={bookDetails.bookPubKey}
+        stakes={bookDetails.stakes}
+        onStakeSuccess={handleStakeSuccess}
+        totalStake={bookDetails.totalStake} // Add this line
+      />
 
       {/* DEBUG INFO */}
       {/* <div className={styles.debugInfo}>

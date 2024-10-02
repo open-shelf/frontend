@@ -8,6 +8,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { ProgramUtils } from "../../utils/programUtils";
 import { useConnection } from "@solana/wallet-adapter-react";
 import { PublicKey } from "@solana/web3.js";
+import StakePopup from "./StakePopup";
 
 interface BookDetailsPopupProps {
   title: string;
@@ -64,6 +65,7 @@ export default function BookDetailsPopup({
   const [userRewards, setUserRewards] = useState<number>(0);
   const [isClaimingReward, setIsClaimingReward] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isStakePopupOpen, setIsStakePopupOpen] = useState(false);
 
   useEffect(() => {
     if (stakes && wallet.publicKey) {
@@ -104,107 +106,19 @@ export default function BookDetailsPopup({
   };
 
   const handleStake = () => {
-    if (isUserStaked) {
-      setIsPopupOpen(true);
-    } else {
-      setIsPopupOpen(true);
-    }
+    setIsStakePopupOpen(true);
   };
 
-  const handleClosePopup = () => {
-    setIsPopupOpen(false);
-    setStakeAmount("");
+  const handleCloseStakePopup = () => {
+    setIsStakePopupOpen(false);
   };
 
-  const handleStakeSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!isUserStaked && bookPubKey) {
-      try {
-        if (!wallet.connected) {
-          throw new Error("Wallet not connected");
-        }
-
-        const programUtils = new ProgramUtils(connection, wallet);
-        const bookPubKeyObj = new PublicKey(bookPubKey);
-        const stakeAmountLamports = Math.floor(parseFloat(stakeAmount) * 1e9);
-
-        const tx = await programUtils.stakeOnBook(
-          bookPubKeyObj,
-          stakeAmountLamports
-        );
-        console.log(`Staked on book. Transaction: ${tx}`);
-
-        await new Promise((f) => setTimeout(f, 5000));
-
-        const updatedBookInfo = await programUtils.fetchBook(bookPubKeyObj);
-
-        updatedBookInfo.bookPubKey = bookPubKey;
-
-        setBookDetails({
-          ...updatedBookInfo,
-          image, // Assuming image is not part of the on-chain data
-        });
-
-        const userStake = updatedBookInfo.stakes.find(
-          (stake) => stake.staker === wallet.publicKey?.toString()
-        );
-
-        if (userStake) {
-          setIsUserStaked(true);
-          setUserStakeAmount(userStake.amount);
-          setUserRewards(0);
-        }
-
-        console.log("Successfully staked on book:", title);
-      } catch (error) {
-        console.error("Error staking on book:", error);
-        setError("Failed to stake on the book");
-      }
-    }
-    handleClosePopup();
-  };
-
-  const handleClaimReward = async () => {
-    if (bookPubKey && wallet.connected && userRewards > 0) {
-      try {
-        setIsClaimingReward(true);
-        const programUtils = new ProgramUtils(connection, wallet);
-        const bookPubKeyObj = new PublicKey(bookPubKey);
-
-        const tx = await programUtils.claimStakeEarnings(bookPubKeyObj);
-        console.log(`Earning claimed. Transaction: ${tx}`);
-
-        await new Promise((f) => setTimeout(f, 5000));
-
-        const updatedBookInfo = await programUtils.fetchBook(bookPubKeyObj);
-
-        updatedBookInfo.bookPubKey = bookPubKey;
-
-        setBookDetails({
-          ...updatedBookInfo,
-          image,
-        });
-
-        const userStake = updatedBookInfo.stakes.find(
-          (stake) => stake.staker === wallet.publicKey?.toString()
-        );
-
-        if (userStake) {
-          setUserStakeAmount(userStake.amount);
-          setUserRewards(0);
-        } else {
-          setUserStakeAmount(0);
-          setUserRewards(0);
-        }
-
-        console.log("Successfully claimed reward for book:", title);
-      } catch (error) {
-        console.error("Error claiming reward:", error);
-        setError("Failed to claim reward");
-      } finally {
-        setIsClaimingReward(false);
-      }
-    }
+  const handleStakeSuccess = (updatedBookInfo: any) => {
+    setBookDetails({
+      ...updatedBookInfo,
+      image,
+      bookPurchased: isBookPurchased,
+    });
   };
 
   const handlePurchaseFullBook = async () => {
@@ -384,68 +298,14 @@ export default function BookDetailsPopup({
           </div>
         </div>
 
-        {isPopupOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-8 rounded-lg max-w-md w-full">
-              <button
-                onClick={handleClosePopup}
-                className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 transition-colors"
-              >
-                &times;
-              </button>
-              <h3 className="text-xl font-bold mb-4 text-[#1D3557]">
-                {isUserStaked ? "Your Stake Details" : "Stake SOL"}
-              </h3>
-              {isUserStaked ? (
-                <div>
-                  <p className="mb-2 text-gray-600">
-                    <strong>Staked Amount:</strong> {userStakeAmount / 1e9} SOL
-                  </p>
-                  <p className="mb-4 text-gray-600">
-                    <strong>Rewards Earned:</strong> {userRewards / 1e9} SOL
-                  </p>
-                  {userRewards > 0 && (
-                    <button
-                      onClick={handleClaimReward}
-                      disabled={isClaimingReward}
-                      className="bg-[#1D3557] text-white px-4 py-2 rounded hover:bg-[#2A4A6D] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isClaimingReward ? "Claiming..." : "Claim Reward"}
-                    </button>
-                  )}
-                </div>
-              ) : (
-                <form onSubmit={handleStakeSubmit}>
-                  <input
-                    type="number"
-                    value={stakeAmount}
-                    onChange={(e) => setStakeAmount(e.target.value)}
-                    placeholder="Enter stake amount in SOL"
-                    min="0"
-                    step="0.1"
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded mb-4 text-gray-700"
-                  />
-                  <div className="flex justify-end gap-2">
-                    <button
-                      type="submit"
-                      className="bg-[#1D3557] text-white px-4 py-2 rounded hover:bg-[#2A4A6D] transition-colors"
-                    >
-                      Stake
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleClosePopup}
-                      className="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300 transition-colors"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </form>
-              )}
-            </div>
-          </div>
-        )}
+        <StakePopup
+          isOpen={isStakePopupOpen}
+          onClose={handleCloseStakePopup}
+          bookPubKey={bookPubKey}
+          stakes={stakes}
+          onStakeSuccess={handleStakeSuccess}
+          totalStake={totalStake} // Add this line
+        />
 
         {error && (
           <div className="fixed bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded">

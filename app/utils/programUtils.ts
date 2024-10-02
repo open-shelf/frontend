@@ -158,4 +158,13 @@ export class ProgramUtils {
 
     return fetchedBooks
   }
+
+  async fetchAllStakes(staker: PublicKey): Promise<BookData[]> {
+    const fetchedBooks = await this.fetchAllBooks();
+    // Filter only the books in which the staker public key is available
+    const stakedBooks = fetchedBooks.filter(book => 
+      book.stakes.some(stake => stake.staker === staker.toString())
+    );
+    return stakedBooks;
+  }
 }

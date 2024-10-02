@@ -124,7 +124,7 @@ const StakedBooksPage = () => {
   const prepareStakeDistributionData = (book: BookDetails) => {
     return book.stakes.map((stake) => ({
       name: stake.staker.slice(0, 4) + "..." + stake.staker.slice(-4),
-      value: stake.amount,
+      value: stake.amount / 1e9, // Convert lamports to SOL
     }));
   };
 
@@ -225,8 +225,8 @@ const StakedBooksPage = () => {
   };
 
   return (
-    <div>
-      <div className="sticky top-0 z-10 pb-4">
+    <main className="flex-1 overflow-y-auto">
+      <div className="sticky top-0 z-10 p-4">
         <SearchBar />
       </div>
       <AnimatePresence>
@@ -335,7 +335,8 @@ const StakedBooksPage = () => {
                   <div className="bg-white p-4 rounded-lg">
                     <p className="text-sm text-[#457B9D]">Average Stake</p>
                     <p className="text-xl font-semibold text-[#1D3557]">
-                      {calculateAverageStake(selectedBook) / 1e9} SOL
+                      {(calculateAverageStake(selectedBook) / 1e9).toFixed(4)}{" "}
+                      SOL
                     </p>
                   </div>
                 </div>
@@ -384,7 +385,10 @@ const StakedBooksPage = () => {
                     </button>
                   </div>
                   <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={prepareEarningsData(selectedBook)}>
+                    <BarChart
+                      data={prepareEarningsData(selectedBook)}
+                      margin={{ top: 20, right: 30, left: 65, bottom: 5 }}
+                    >
                       <XAxis
                         dataKey="name"
                         tick={{ fill: "#1D3557" }}
@@ -400,6 +404,7 @@ const StakedBooksPage = () => {
                           angle: -90,
                           position: "insideLeft",
                           fill: "#1D3557",
+                          offset: -50,
                         }}
                       />
                       <Tooltip
@@ -441,7 +446,7 @@ const StakedBooksPage = () => {
           </div>
         </section>
       )}
-    </div>
+    </main>
   );
 };
 

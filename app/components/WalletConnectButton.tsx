@@ -5,6 +5,7 @@ import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { useEffect, useState } from "react";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import crypto from "crypto";
+import { useRouter } from "next/navigation";
 
 const WalletConnectButton = () => {
   const { publicKey, connected } = useWallet();
@@ -12,6 +13,7 @@ const WalletConnectButton = () => {
   const [mounted, setMounted] = useState(false);
   const [balance, setBalance] = useState<number | null>(null);
   const [amount, setAmount] = useState("1"); // Default value set to "1"
+  const router = useRouter();
 
   const handleBuyCrypto = () => {
     if (!publicKey) {
@@ -58,6 +60,10 @@ const WalletConnectButton = () => {
     );
   };
 
+  const handleDashboardClick = () => {
+    router.push("/staking-dashboard");
+  };
+
   useEffect(() => {
     setMounted(true);
 
@@ -75,38 +81,56 @@ const WalletConnectButton = () => {
     }
 
     // Add custom option to the wallet dropdown
-    const addCustomOption = () => {
+    const addCustomOptions = () => {
       const dropdown = document.querySelector(".wallet-adapter-dropdown-list");
-      if (dropdown && !dropdown.querySelector(".buy-crypto-option")) {
-        const buyCryptoOption = document.createElement("li");
-        buyCryptoOption.className =
-          "wallet-adapter-dropdown-list-item buy-crypto-option";
+      if (dropdown) {
+        // Add Quick Buy Solana option
+        if (!dropdown.querySelector(".buy-crypto-option")) {
+          const buyCryptoOption = document.createElement("li");
+          buyCryptoOption.className =
+            "wallet-adapter-dropdown-list-item buy-crypto-option";
 
-        const input = document.createElement("input");
-        input.type = "number";
-        input.value = "1"; // Set default value to 1
-        input.placeholder = "Amount";
-        input.className = "buy-crypto-input";
-        input.max = "99999"; // Set maximum value to 99999
-        input.step = "0.1"; // Allow two decimal places
-        // Remove the onchange event handler
+          const input = document.createElement("input");
+          input.type = "number";
+          input.value = "1"; // Set default value to 1
+          input.placeholder = "Amount";
+          input.className = "buy-crypto-input";
+          input.max = "99999"; // Set maximum value to 99999
+          input.step = "0.1"; // Allow two decimal places
+          // Remove the onchange event handler
 
-        const button = document.createElement("button");
-        button.onclick = handleBuyCrypto;
-        button.textContent = "Quick Buy Solana";
-        button.className = "buy-crypto-button";
+          const button = document.createElement("button");
+          button.onclick = handleBuyCrypto;
+          button.textContent = "Quick Buy Solana";
+          button.className = "buy-crypto-button";
 
-        buyCryptoOption.appendChild(input);
-        buyCryptoOption.appendChild(button);
-        dropdown.appendChild(buyCryptoOption);
+          buyCryptoOption.appendChild(input);
+          buyCryptoOption.appendChild(button);
+          dropdown.appendChild(buyCryptoOption);
+        }
+
+        // Add Dashboard option
+        if (!dropdown.querySelector(".dashboard-option") && connected) {
+          const dashboardOption = document.createElement("li");
+          dashboardOption.className =
+            "wallet-adapter-dropdown-list-item dashboard-option";
+
+          const button = document.createElement("button");
+          button.onclick = handleDashboardClick;
+          button.textContent = "Dashboard";
+          button.className = "wallet-adapter-dropdown-list-item";
+
+          dashboardOption.appendChild(button);
+          dropdown.appendChild(dashboardOption);
+        }
       }
     };
 
-    // Check for the dropdown periodically and add the custom option
-    const interval = setInterval(addCustomOption, 100);
+    // Check for the dropdown periodically and add the custom options
+    const interval = setInterval(addCustomOptions, 100);
 
     return () => clearInterval(interval);
-  }, [connected, publicKey, connection]);
+  }, [connected, publicKey, connection, router]);
 
   if (!mounted) return null;
 
@@ -203,6 +227,27 @@ const WalletConnectButton = () => {
         }
         .buy-crypto-button:hover {
           background-color: #4a6fa5;
+        }
+        .dashboard-option {
+          width: 100%;
+        }
+        .dashboard-option button {
+          background-color: transparent;
+          color: #fff;
+          border: none;
+          padding: 0;
+          cursor: pointer;
+          font-size: inherit;
+          width: 100%;
+          text-align: center; // Changed from left to center
+          height: 37px;
+          display: flex;
+          align-items: center;
+          justify-content: center; // Added to center the text horizontally
+          padding: 0 16px;
+        }
+        .dashboard-option button:hover {
+          background-color: #1a1f2e;
         }
       `}</style>
     </div>

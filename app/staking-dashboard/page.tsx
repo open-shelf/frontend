@@ -16,20 +16,25 @@ import {
   Pie,
   Cell,
   ResponsiveContainer,
+  Sector,
 } from "recharts";
 import SearchBar from "../components/bookstore/SearchBar";
 import { div } from "framer-motion/client";
+import { PublicKey } from "@solana/web3.js";
+import { motion, AnimatePresence } from "framer-motion";
 
-const COLORS = ["#1D3557", "#457B9D", "#E63946", "#2A9D8F", "#264653"];
+const COLORS = ["#8ecae6", "#219ebc", "#023047", "#ffb703", "#fb8500"];
 
 const StakedBooksPage = () => {
   const [stakedBooks, setStakedBooks] = useState<BookDetails[]>([]);
   const [selectedBook, setSelectedBook] = useState<BookDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { publicKey } = useWallet();
   const { connection } = useConnection();
   const wallet = useWallet();
+  const [sortByEarnings, setSortByEarnings] = useState(false);
 
   useEffect(() => {
     const fetchStakedBooks = async () => {
@@ -56,6 +61,53 @@ const StakedBooksPage = () => {
     fetchStakedBooks();
   }, [publicKey, connection, wallet]);
 
+  const handleClaimReward = async (book: BookDetails) => {
+    if (wallet.publicKey && wallet.connected) {
+      try {
+        const programUtils = new ProgramUtils(connection, wallet);
+        const bookPubKeyObj = new PublicKey(book.pubKey);
+
+        const tx = await programUtils.claimStakeEarnings(bookPubKeyObj);
+        console.log(`Earnings claimed. Transaction: ${tx}`);
+
+        // Wait for the transaction to be confirmed
+        await new Promise((f) => setTimeout(f, 5000));
+
+        // Fetch updated book info
+        const updatedBookInfo = await programUtils.fetchBook(bookPubKeyObj);
+
+        // Set earnings to 0 for the current user's stake
+        const updatedStakes = updatedBookInfo.stakes.map((stake) => {
+          if (stake.staker === wallet.publicKey?.toString()) {
+            return { ...stake, earnings: 0 };
+          }
+          return stake;
+        });
+
+        const updatedBook = { ...updatedBookInfo, stakes: updatedStakes };
+
+        // Update the stakedBooks state with the new information
+        setStakedBooks((prevBooks) =>
+          prevBooks.map((b) => (b.pubKey === book.pubKey ? updatedBook : b))
+        );
+
+        // If the claimed book is the selected book, update it
+        if (selectedBook && selectedBook.pubKey === book.pubKey) {
+          setSelectedBook(updatedBook);
+        }
+
+        console.log("Successfully claimed reward for book");
+        setErrorMessage(null); // Clear any previous error
+      } catch (error) {
+        console.error("Error claiming reward:", error);
+        setErrorMessage("Failed to claim reward. Please try again.");
+
+        // Automatically clear the error message after 5 seconds
+        setTimeout(() => setErrorMessage(null), 5000);
+      }
+    }
+  };
+
   const calculateTotalStake = (book: BookDetails) => {
     return book.stakes.reduce((sum, stake) => sum + stake.amount, 0);
   };
@@ -77,183 +129,318 @@ const StakedBooksPage = () => {
   };
 
   const prepareEarningsData = (book: BookDetails) => {
-    return book.stakes.map((stake) => ({
+    const data = book.stakes.map((stake) => ({
       name: stake.staker.slice(0, 4) + "..." + stake.staker.slice(-4),
-      earnings: stake.earnings,
+      earnings: stake.earnings / 1e9, // Convert to SOL
     }));
+
+    if (sortByEarnings) {
+      data.sort((a, b) => b.earnings - a.earnings);
+    }
+
+    return data;
   };
 
-  if (!publicKey) {
-    return (
-      <section className="bg-[#F1FAEE] p-6 rounded-2xl shadow-md">
-        <p className="text-[#1D3557]">
-          Please connect your wallet to view your staked books.
-        </p>
-      </section>
+  // Add this function to calculate earnings for the current wallet
+  const calculateWalletEarnings = (book: BookDetails) => {
+    const walletStake = book.stakes.find(
+      (stake) => stake.staker === wallet.publicKey?.toString()
     );
-  }
+    return walletStake ? walletStake.earnings : 0;
+  };
 
-  if (loading) {
-    return (
-      <section className="bg-[#F1FAEE] p-6 rounded-2xl shadow-md">
-        <p className="text-[#1D3557]">Loading your staked books...</p>
-      </section>
-    );
-  }
+  const renderActiveShape = (props: any) => {
+    const RADIAN = Math.PI / 180;
+    const {
+      cx,
+      cy,
+      midAngle,
+      innerRadius,
+      outerRadius,
+      startAngle,
+      endAngle,
+      fill,
+      payload,
+      percent,
+      value,
+    } = props;
+    const sin = Math.sin(-RADIAN * midAngle);
+    const cos = Math.cos(-RADIAN * midAngle);
+    const sx = cx + (outerRadius + 10) * cos;
+    const sy = cy + (outerRadius + 10) * sin;
+    const mx = cx + (outerRadius + 30) * cos;
+    const my = cy + (outerRadius + 30) * sin;
+    const ex = mx + (cos >= 0 ? 1 : -1) * 22;
+    const ey = my;
+    const textAnchor = cos >= 0 ? "start" : "end";
 
-  if (error) {
     return (
-      <section className="bg-[#F1FAEE] p-6 rounded-2xl shadow-md">
-        <p className="text-[#E63946]">{error}</p>
-      </section>
+      <g>
+        <Sector
+          cx={cx}
+          cy={cy}
+          innerRadius={innerRadius}
+          outerRadius={outerRadius}
+          startAngle={startAngle}
+          endAngle={endAngle}
+          fill={fill}
+        />
+        <Sector
+          cx={cx}
+          cy={cy}
+          startAngle={startAngle}
+          endAngle={endAngle}
+          innerRadius={outerRadius + 6}
+          outerRadius={outerRadius + 10}
+          fill={fill}
+        />
+        <path
+          d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`}
+          stroke={fill}
+          fill="none"
+        />
+        <circle cx={ex} cy={ey} r={2} fill={fill} stroke="none" />
+        <text
+          x={ex + (cos >= 0 ? 1 : -1) * 12}
+          y={ey}
+          textAnchor={textAnchor}
+          fill="#333"
+        >{`${payload.name}`}</text>
+        <text
+          x={ex + (cos >= 0 ? 1 : -1) * 12}
+          y={ey}
+          dy={18}
+          textAnchor={textAnchor}
+          fill="#999"
+        >
+          {`${value.toFixed(2)} SOL (${(percent * 100).toFixed(2)}%)`}
+        </text>
+      </g>
     );
-  }
+  };
+
+  const [activeIndex, setActiveIndex] = useState(0);
+  const onPieEnter = (_: any, index: number) => {
+    setActiveIndex(index);
+  };
 
   return (
     <div>
       <div className="sticky top-0 z-10 pb-4">
         <SearchBar />
       </div>
-      <section className="bg-[#F1FAEE] p-6 rounded-2xl shadow-md flex">
-        {/* Left side - Book list */}
-        <div className="w-1/3 pr-4 border-r border-[#A8DADC]">
-          <h2 className="text-2xl font-bold text-[#1D3557] mb-4">
-            Staked Books
-          </h2>
-          {stakedBooks.length === 0 ? (
-            <p className="text-[#1D3557]">You haven't staked any books yet.</p>
-          ) : (
-            <ul>
-              {stakedBooks.map((book) => (
-                <li
-                  key={book.pubKey}
-                  className={`mb-4 p-4 rounded-lg cursor-pointer transition-colors ${
-                    selectedBook?.pubKey === book.pubKey
-                      ? "bg-[#A8DADC]"
-                      : "bg-white hover:bg-[#A8DADC]"
-                  }`}
-                  onClick={() => setSelectedBook(book)}
-                >
-                  <h3 className="text-lg font-semibold text-[#1D3557]">
-                    {book.title}
-                  </h3>
-                  <p className="text-sm text-[#457B9D]">by {book.author}</p>
-                  <p className="text-[#1D3557] mt-2">
-                    Earnings: {calculateTotalEarnings(book) / 1e9} SOL
-                  </p>
-                  <button className="mt-2 bg-[#457B9D] text-white px-4 py-2 rounded hover:bg-[#1D3557] transition-colors">
-                    Claim Earnings
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-
-        {/* Right side - Book details and analytics */}
-        <div className="w-2/3 pl-4">
-          {selectedBook ? (
-            <>
-              <h2 className="text-2xl font-bold text-[#1D3557] mb-4">
-                {selectedBook.title} Analytics
-              </h2>
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <div className="bg-white p-4 rounded-lg">
-                  <p className="text-sm text-[#457B9D]">Total Stake</p>
-                  <p className="text-xl font-semibold text-[#1D3557]">
-                    {calculateTotalStake(selectedBook) / 1e9} SOL
-                  </p>
-                </div>
-                <div className="bg-white p-4 rounded-lg">
-                  <p className="text-sm text-[#457B9D]">Total Earnings</p>
-                  <p className="text-xl font-semibold text-[#1D3557]">
-                    {calculateTotalEarnings(selectedBook) / 1e9} SOL
-                  </p>
-                </div>
-                <div className="bg-white p-4 rounded-lg">
-                  <p className="text-sm text-[#457B9D]">Number of Stakers</p>
-                  <p className="text-xl font-semibold text-[#1D3557]">
-                    {selectedBook.stakes.length}
-                  </p>
-                </div>
-                <div className="bg-white p-4 rounded-lg">
-                  <p className="text-sm text-[#457B9D]">Average Stake</p>
-                  <p className="text-xl font-semibold text-[#1D3557]">
-                    {calculateAverageStake(selectedBook) / 1e9} SOL
-                  </p>
-                </div>
-              </div>
-
-              <div className="mb-6 bg-white p-4 rounded-lg">
-                <h3 className="text-lg font-semibold mb-2 text-[#1D3557]">
-                  Stake Distribution
-                </h3>
-                <ResponsiveContainer width="100%" height={200}>
-                  <PieChart>
-                    <Pie
-                      data={prepareStakeDistributionData(selectedBook)}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
+      <AnimatePresence>
+        {errorMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -50 }}
+            transition={{ duration: 0.5 }}
+            className="fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded shadow-md z-50"
+          >
+            {errorMessage}
+          </motion.div>
+        )}
+      </AnimatePresence>
+      {!publicKey ? (
+        <section className="bg-[#F1FAEE] p-6 rounded-2xl shadow-md">
+          <p className="text-[#1D3557]">
+            Please connect your wallet to view your staked books.
+          </p>
+        </section>
+      ) : loading ? (
+        <section className="bg-[#F1FAEE] p-6 rounded-2xl shadow-md">
+          <p className="text-[#1D3557]">Loading your staked books...</p>
+        </section>
+      ) : error ? (
+        <section className="bg-[#F1FAEE] p-6 rounded-2xl shadow-md">
+          <p className="text-[#E63946]">{error}</p>
+        </section>
+      ) : (
+        <section className="bg-[#F1FAEE] p-6 rounded-2xl shadow-md flex">
+          {/* Left side - Book list */}
+          <div className="w-1/3 pr-4 border-r border-[#A8DADC]">
+            <h2 className="text-2xl font-bold text-[#1D3557] mb-4">
+              Staked Books
+            </h2>
+            {stakedBooks.length === 0 ? (
+              <p className="text-[#1D3557]">
+                You haven't staked any books yet.
+              </p>
+            ) : (
+              <ul>
+                {stakedBooks.map((book) => {
+                  const walletEarnings = calculateWalletEarnings(book);
+                  return (
+                    <li
+                      key={book.pubKey}
+                      className={`mb-4 p-4 rounded-lg cursor-pointer transition-colors ${
+                        selectedBook?.pubKey === book.pubKey
+                          ? "bg-[#A8DADC]"
+                          : "bg-white hover:bg-[#A8DADC]"
+                      }`}
+                      onClick={() => setSelectedBook(book)}
                     >
-                      {prepareStakeDistributionData(selectedBook).map(
-                        (entry, index) => (
-                          <Cell
-                            key={`cell-${index}`}
-                            fill={COLORS[index % COLORS.length]}
-                          />
-                        )
+                      <h3 className="text-lg font-semibold text-[#1D3557]">
+                        {book.title}
+                      </h3>
+                      <p className="text-sm text-[#457B9D]">by {book.author}</p>
+                      <p className="text-[#1D3557] mt-2">
+                        Your Earnings: {walletEarnings / 1e9} SOL
+                      </p>
+                      {walletEarnings > 0 && (
+                        <button
+                          className="mt-2 bg-[#457B9D] text-white px-4 py-2 rounded hover:bg-[#1D3557] transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleClaimReward(book);
+                          }}
+                        >
+                          Claim Earnings
+                        </button>
                       )}
-                    </Pie>
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "white",
-                        color: "#1D3557",
-                      }}
-                    />
-                    <Legend
-                      formatter={(value) => (
-                        <span style={{ color: "#1D3557" }}>{value}</span>
-                      )}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
 
-              <div className="bg-white p-4 rounded-lg">
-                <h3 className="text-lg font-semibold mb-2 text-[#1D3557]">
-                  Earnings by Staker
-                </h3>
-                <ResponsiveContainer width="100%" height={200}>
-                  <BarChart data={prepareEarningsData(selectedBook)}>
-                    <XAxis dataKey="name" tick={{ fill: "#1D3557" }} />
-                    <YAxis tick={{ fill: "#1D3557" }} />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "white",
-                        color: "#1D3557",
-                      }}
-                    />
-                    <Legend
-                      formatter={(value) => (
-                        <span style={{ color: "#1D3557" }}>{value}</span>
-                      )}
-                    />
-                    <Bar dataKey="earnings" fill="#457B9D" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </>
-          ) : (
-            <p className="text-[#1D3557]">
-              Select a book to view its analytics.
-            </p>
-          )}
-        </div>
-      </section>
+          {/* Right side - Book details and analytics */}
+          <div className="w-2/3 pl-4">
+            {selectedBook ? (
+              <>
+                <h2 className="text-2xl font-bold text-[#1D3557] mb-4">
+                  {selectedBook.title} Analytics
+                </h2>
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                  <div className="bg-white p-4 rounded-lg">
+                    <p className="text-sm text-[#457B9D]">Total Stake</p>
+                    <p className="text-xl font-semibold text-[#1D3557]">
+                      {calculateTotalStake(selectedBook) / 1e9} SOL
+                    </p>
+                  </div>
+                  <div className="bg-white p-4 rounded-lg">
+                    <p className="text-sm text-[#457B9D]">Total Earnings</p>
+                    <p className="text-xl font-semibold text-[#1D3557]">
+                      {calculateTotalEarnings(selectedBook) / 1e9} SOL
+                    </p>
+                  </div>
+                  <div className="bg-white p-4 rounded-lg">
+                    <p className="text-sm text-[#457B9D]">Number of Stakers</p>
+                    <p className="text-xl font-semibold text-[#1D3557]">
+                      {selectedBook.stakes.length}
+                    </p>
+                  </div>
+                  <div className="bg-white p-4 rounded-lg">
+                    <p className="text-sm text-[#457B9D]">Average Stake</p>
+                    <p className="text-xl font-semibold text-[#1D3557]">
+                      {calculateAverageStake(selectedBook) / 1e9} SOL
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mb-6 bg-white p-4 rounded-lg shadow-lg">
+                  <h3 className="text-lg font-semibold mb-2 text-[#1D3557]">
+                    Stake Distribution
+                  </h3>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <PieChart>
+                      <Pie
+                        activeIndex={activeIndex}
+                        activeShape={renderActiveShape}
+                        data={prepareStakeDistributionData(selectedBook)}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                        onMouseEnter={onPieEnter}
+                      >
+                        {prepareStakeDistributionData(selectedBook).map(
+                          (entry, index) => (
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={COLORS[index % COLORS.length]}
+                            />
+                          )
+                        )}
+                      </Pie>
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+
+                <div className="bg-white p-4 rounded-lg shadow-lg">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-semibold text-[#1D3557]">
+                      Earnings by Staker
+                    </h3>
+                    <button
+                      className="px-3 py-1 bg-[#457B9D] text-white rounded hover:bg-[#1D3557] transition-colors"
+                      onClick={() => setSortByEarnings(!sortByEarnings)}
+                    >
+                      {sortByEarnings ? "Sort by Staker" : "Sort by Earnings"}
+                    </button>
+                  </div>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={prepareEarningsData(selectedBook)}>
+                      <XAxis
+                        dataKey="name"
+                        tick={{ fill: "#1D3557" }}
+                        axisLine={{ stroke: "#A8DADC" }}
+                        tickLine={{ stroke: "#A8DADC" }}
+                      />
+                      <YAxis
+                        tick={{ fill: "#1D3557" }}
+                        axisLine={{ stroke: "#A8DADC" }}
+                        tickLine={{ stroke: "#A8DADC" }}
+                        label={{
+                          value: "Earnings (SOL)",
+                          angle: -90,
+                          position: "insideLeft",
+                          fill: "#1D3557",
+                        }}
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "white",
+                          color: "#1D3557",
+                          border: "1px solid #A8DADC",
+                          borderRadius: "4px",
+                        }}
+                        formatter={(value: number) => [
+                          `${value.toFixed(4)} SOL`,
+                          "Earnings",
+                        ]}
+                      />
+                      <Bar
+                        dataKey="earnings"
+                        fill="#457B9D"
+                        animationDuration={1000}
+                        animationEasing="ease-out"
+                      >
+                        {prepareEarningsData(selectedBook).map(
+                          (entry, index) => (
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={COLORS[index % COLORS.length]}
+                            />
+                          )
+                        )}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </>
+            ) : (
+              <p className="text-[#1D3557]">
+                Select a book to view its analytics.
+              </p>
+            )}
+          </div>
+        </section>
+      )}
     </div>
   );
 };

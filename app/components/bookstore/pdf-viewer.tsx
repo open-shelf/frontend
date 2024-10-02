@@ -529,7 +529,7 @@ const PDFViewer = () => {
                   ? "Read"
                   : purchasingChapterIndex === chapter.index
                   ? "Purchasing..."
-                  : `Buy (${chapter.price / 1e9} SOL)`}
+                  : `${chapter.price / 1e9} sol`}
               </button>
             </div>
           ))}

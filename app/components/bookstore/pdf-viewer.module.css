@@ -5,7 +5,7 @@
 }
 
 .sidebar {
-  width: 250px;
+  width: 350px;
   height: 100%;
   background-color: #f5f5f5;
   color: #333;
@@ -121,7 +121,7 @@
 .controlBar {
   position: fixed;
   bottom: 0;
-  left: 250px; /* Align with sidebar width */
+  left: 350px; /* Align with new sidebar width */
   right: 0;
   background-color: rgba(44, 62, 80, 0.9);
   padding: 5px 10px;
@@ -211,8 +211,8 @@
 
 .debugInfo {
   position: fixed;
-  bottom: 50px; /* Adjust this value to position above the control bar */
-  left: 260px; /* Adjust this value to position it slightly to the right of the sidebar */
+  bottom: 50px;
+  left: 360px; /* Adjust this value to position it slightly to the right of the new sidebar width */
   background-color: rgba(0, 0, 0, 0.7);
   color: white;
   padding: 10px;

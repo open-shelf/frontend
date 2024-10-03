@@ -64,12 +64,13 @@ export default function MyBookLibrary() {
 
           // Check if any chapter is purchased
           const hasAnyChapterPurchased = book.chapters.some(
-            (chapter) => chapter.isPurchased
+            (chapter: { isPurchased: any }) => chapter.isPurchased
           );
 
           // Check if the user has staked in this book
           const hasUserStaked = book.stakes.some(
-            (stake) => stake.staker === wallet.publicKey?.toString()
+            (stake: { staker: string | undefined }) =>
+              stake.staker === wallet.publicKey?.toString()
           );
 
           return hasAnyChapterPurchased || hasUserStaked;

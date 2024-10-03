@@ -114,7 +114,8 @@ export default function StakePopup({
         onStakeSuccess(updatedBookInfo);
 
         const userStake = updatedBookInfo.stakes.find(
-          (stake) => stake.staker === wallet.publicKey?.toString()
+          (stake: { staker: string | undefined }) =>
+            stake.staker === wallet.publicKey?.toString()
         );
 
         if (userStake) {

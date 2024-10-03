@@ -78,12 +78,14 @@ const StakedBooksPage = () => {
         const updatedBookInfo = await programUtils.fetchBook(bookPubKeyObj);
 
         // Set earnings to 0 for the current user's stake
-        const updatedStakes = updatedBookInfo.stakes.map((stake) => {
-          if (stake.staker === wallet.publicKey?.toString()) {
-            return { ...stake, earnings: 0 };
+        const updatedStakes = updatedBookInfo.stakes.map(
+          (stake: { staker: string | undefined }) => {
+            if (stake.staker === wallet.publicKey?.toString()) {
+              return { ...stake, earnings: 0 };
+            }
+            return stake;
           }
-          return stake;
-        });
+        );
 
         const updatedBook = { ...updatedBookInfo, stakes: updatedStakes };
 

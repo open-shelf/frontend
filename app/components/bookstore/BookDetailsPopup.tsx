@@ -100,7 +100,8 @@ export default function BookDetailsPopup({
       stakes,
       image,
       bookPubKey,
-      bookPurchased: isBookPurchased, // Add this line
+      bookPurchased: isBookPurchased,
+      id: bookPubKey,
     });
     router.push("/reader");
   };

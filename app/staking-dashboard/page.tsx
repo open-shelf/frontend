@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useConnection } from "@solana/wallet-adapter-react";
 import { ProgramUtils } from "../utils/programUtils";
-import { BookDetails } from "../types/BookDetails";
+import { BookDetails } from "../types/types";
 import {
   BarChart,
   Bar,
@@ -18,8 +18,9 @@ import {
   ResponsiveContainer,
   Sector,
 } from "recharts";
+import crypto from "crypto";
+
 import SearchBar from "../components/bookstore/SearchBar";
-import { div } from "framer-motion/client";
 import { PublicKey } from "@solana/web3.js";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -103,6 +104,66 @@ const StakedBooksPage = () => {
         setErrorMessage("Failed to claim reward. Please try again.");
 
         // Automatically clear the error message after 5 seconds
+        setTimeout(() => setErrorMessage(null), 5000);
+      }
+    }
+  };
+
+  const generateMercuryoSellLink = (address: string, amount: number) => {
+    const baseUrl = "https://exchange.mercuryo.io/";
+    const widgetId = "4dda8867-45de-4473-8f9b-6a929c6ff730"; // Replace with your actual widget ID
+    const secret = "secret"; // Replace with your actual secret
+
+    const signatureInput = `${address}${secret}`;
+    const signature = crypto
+      .createHash("sha512")
+      .update(signatureInput)
+      .digest("hex");
+
+    const params = new URLSearchParams({
+      widget_id: widgetId,
+      type: "sell",
+      currency: "USDC",
+      network: "SOLANA",
+      amount: amount.toString(),
+      fiat_currency: "EUR",
+      address: address,
+      signature: signature,
+      fix_amount: "true",
+    });
+
+    return `${baseUrl}?${params.toString()}`;
+  };
+
+  const handleOffRamp = async (book: BookDetails) => {
+    if (wallet.publicKey && wallet.connected) {
+      try {
+        // Claim rewards first
+        await handleClaimReward(book);
+
+        // Get the wallet's earnings from the book
+        const walletEarnings = calculateWalletEarnings(book);
+        const earningsInSOL = walletEarnings / 1e9; // Convert lamports to SOL
+
+        // Generate the Mercuryo sell link
+        const address = wallet.publicKey.toString();
+        const sellLink = generateMercuryoSellLink(address, earningsInSOL);
+
+        // Open the Mercuryo widget in a new window
+        window.open(
+          sellLink,
+          "MercuryoWidget",
+          "width=500,height=600,resizable=yes,scrollbars=yes"
+        );
+
+        console.log("Successfully initiated off-ramp process");
+        setErrorMessage(null);
+      } catch (error) {
+        console.error("Error in off-ramp process:", error);
+        setErrorMessage(
+          "Failed to initiate off-ramp process. Please try again."
+        );
+
         setTimeout(() => setErrorMessage(null), 5000);
       }
     }
@@ -271,6 +332,9 @@ const StakedBooksPage = () => {
               <ul>
                 {stakedBooks.map((book) => {
                   const walletEarnings = calculateWalletEarnings(book);
+                  const walletStake = book.stakes.find(
+                    (stake) => stake.staker === wallet.publicKey?.toString()
+                  );
                   return (
                     <li
                       key={book.pubKey}
@@ -288,17 +352,30 @@ const StakedBooksPage = () => {
                       <p className="text-[#1D3557] mt-2">
                         Your Earnings: {walletEarnings / 1e9} SOL
                       </p>
-                      {walletEarnings > 0 && (
-                        <button
-                          className="mt-2 bg-[#457B9D] text-white px-4 py-2 rounded hover:bg-[#1D3557] transition-colors"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleClaimReward(book);
-                          }}
-                        >
-                          Claim Earnings
-                        </button>
-                      )}
+                      <div className="flex space-x-2 mt-2">
+                        {walletEarnings > 0 && (
+                          <button
+                            className="bg-[#457B9D] text-white px-4 py-2 rounded hover:bg-[#1D3557] transition-colors"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleClaimReward(book);
+                            }}
+                          >
+                            Claim Earnings
+                          </button>
+                        )}
+                        {walletStake && walletStake.amount > 0 && (
+                          <button
+                            className="bg-[#E63946] text-white px-4 py-2 rounded hover:bg-[#C1121F] transition-colors"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOffRamp(book);
+                            }}
+                          >
+                            Withdraw To Bank/Credit Card
+                          </button>
+                        )}
+                      </div>
                     </li>
                   );
                 })}

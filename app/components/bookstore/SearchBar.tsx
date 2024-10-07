@@ -1,14 +1,28 @@
 "use client";
 
 import { useState } from "react";
-import { Search, X, ChevronDown } from "lucide-react";
+import { Search, X } from "lucide-react";
+import WalletConnectButton from "../WalletConnectButton";
+import Link from "next/link";
 
 export default function SearchBar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   return (
     <div className="flex items-center justify-between bg-[#A8DADC] p-6 rounded-2xl shadow-md">
-      <h1 className="text-3xl font-bold text-[#1D3557]">OpenShelf Books</h1>
+      <Link
+        href="/bookstore"
+        className="text-3xl font-bold text-[#1D3557] relative group cursor-pointer"
+      >
+        <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#1D3557] to-[#E63946] transition-all duration-300 ease-in-out group-hover:tracking-wider">
+          OpenShelf
+        </span>
+        <span className="text-[#457B9D] transition-all duration-300 ease-in-out group-hover:text-[#E63946]">
+          {" "}
+          Books
+        </span>
+        <span className="absolute -bottom-1 left-0 w-full h-1 bg-[#E63946] transform scale-x-0 transition-transform duration-300 ease-in-out group-hover:scale-x-100"></span>
+      </Link>
       <div className="flex items-center space-x-4">
         <div className="relative">
           {isSearchOpen ? (
@@ -36,10 +50,7 @@ export default function SearchBar() {
             </button>
           )}
         </div>
-        <button className="flex items-center space-x-2 bg-white rounded-xl px-4 py-2 border border-gray-300 hover:bg-gray-50 transition-colors duration-200 hover:bg-[#c81d2a] bg-[#E63946]">
-          <span>Kenson</span>
-          <ChevronDown size={16} />
-        </button>
+        <WalletConnectButton />
       </div>
     </div>
   );

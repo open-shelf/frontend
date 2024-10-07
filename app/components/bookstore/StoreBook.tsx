@@ -1,112 +1,113 @@
+"use client";
 import { ChevronRight } from "lucide-react";
 import Book from "./Book";
+import { useState, useEffect } from "react";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { useConnection } from "@solana/wallet-adapter-react";
+import { ProgramUtils } from "../../utils/programUtils";
+import { PublicKey } from "@solana/web3.js";
 
-const storeBooks = [
-  {
-    author: "Pubkey123456", // Replace with actual Pubkey
-    title: "Moby Dick",
-    chapterPrices: [1200, 1700, 2000], // Prices in smallest unit (e.g., lamports)
-    fullBookPrice: 4900,
-    totalStake: 10500,
-    chapters: [
-      "http://localhost:8000/info/chapter1.pdf",
-      "http://localhost:8000/info/chapter2.pdf",
-      "http://localhost:8000/info/chapter3.pdf",
-    ],
-    stakes: [
-      { staker: "Staker3", amount: 4000 },
-      { staker: "Staker8", amount: 3500 },
-      { staker: "Staker2", amount: 3000 },
-    ],
-  },
-  {
-    author: "Pubkey123456", // Replace with actual Pubkey
-    title: "War and Peace",
-    chapterPrices: [1300, 1500, 2200], // Prices in smallest unit (e.g., lamports)
-    fullBookPrice: 5000,
-    totalStake: 9000,
-    chapters: [
-      "http://localhost:8000/info/chapter1.pdf",
-      "http://localhost:8000/info/chapter2.pdf",
-      "http://localhost:8000/info/chapter3.pdf",
-    ],
-    stakes: [
-      { staker: "Staker4", amount: 4000 },
-      { staker: "Staker5", amount: 2500 },
-      { staker: "Staker1", amount: 2500 },
-    ],
-  },
-  {
-    author: "Pubkey123456", // Replace with actual Pubkey
-    title: "The Catcher in the Rye",
-    chapterPrices: [1000, 1400, 1900], // Prices in smallest unit (e.g., lamports)
-    fullBookPrice: 4300,
-    totalStake: 10400,
-    chapters: [
-      "http://localhost:8000/info/chapter1.pdf",
-      "http://localhost:8000/info/chapter2.pdf",
-      "http://localhost:8000/info/chapter3.pdf",
-    ],
-    stakes: [
-      { staker: "Staker6", amount: 4000 },
-      { staker: "Staker9", amount: 3400 },
-      { staker: "Staker7", amount: 3000 },
-    ],
-  },
-  {
-    author: "Pubkey123456", // Replace with actual Pubkey
-    title: "The Lord of the Rings",
-    chapterPrices: [1500, 1800, 2300], // Prices in smallest unit (e.g., lamports)
-    fullBookPrice: 5600,
-    totalStake: 11900,
-    chapters: [
-      "http://localhost:8000/info/chapter1.pdf",
-      "http://localhost:8000/info/chapter2.pdf",
-      "http://localhost:8000/info/chapter3.pdf",
-    ],
-    stakes: [
-      { staker: "Staker5", amount: 5000 },
-      { staker: "Staker8", amount: 4000 },
-      { staker: "Staker10", amount: 2900 },
-    ],
-  },
-  {
-    author: "Pubkey123456", // Replace with actual Pubkey
-    title: "Harry Potter and the Sorcerer's Stone",
-    chapterPrices: [1100, 1600, 2100], // Prices in smallest unit (e.g., lamports)
-    fullBookPrice: 4800,
-    totalStake: 8600,
-    chapters: [
-      "http://localhost:8000/info/chapter1.pdf",
-      "http://localhost:8000/info/chapter2.pdf",
-      "http://localhost:8000/info/chapter3.pdf",
-    ],
-    stakes: [
-      { staker: "Staker4", amount: 3200 },
-      { staker: "Staker7", amount: 3000 },
-      { staker: "Staker3", amount: 2400 },
-    ],
-  },
-  {
-    author: "Pubkey123456", // Replace with actual Pubkey
-    title: "The Hitchhiker's Guide to the Galaxy",
-    chapterPrices: [1200, 1400, 2100], // Prices in smallest unit (e.g., lamports)
-    fullBookPrice: 4700,
-    totalStake: 9300,
-    chapters: [
-      "http://localhost:8000/info/chapter1.pdf",
-      "http://localhost:8000/info/chapter2.pdf",
-      "http://localhost:8000/info/chapter3.pdf",
-    ],
-    stakes: [
-      { staker: "Staker2", amount: 4200 },
-      { staker: "Staker9", amount: 3000 },
-      { staker: "Staker6", amount: 2100 },
-    ],
-  },
-];
+interface BookData {
+  pubKey: string;
+  author: string;
+  title: string;
+  description: string;
+  genre: string;
+  imageUrl: string;
+  publishDate: string;
+  fullBookPrice: number;
+  totalStake: number;
+  bookPurchased: boolean;
+  chapters: {
+    index: number;
+    isPurchased: boolean;
+    name: string;
+    url: string;
+    price: number;
+  }[];
+  stakes: {
+    staker: string;
+    amount: number;
+    earnings: number;
+  }[];
+}
 
 export default function StoreBook() {
+  const [storeBooks, setStoreBooks] = useState<BookData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { connection } = useConnection();
+  const wallet = useWallet();
+
+  useEffect(() => {
+    const fetchBooks = async () => {
+      if (!wallet.publicKey) {
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
+
+      const programUtils = new ProgramUtils(connection, wallet);
+
+      try {
+        // Fetch all books data from the program
+        const allBooks = await programUtils.fetchAllBooks();
+
+        console.log("All books:", allBooks);
+
+        // Filter books that are available in the store
+        const storeBooks = allBooks.filter((book) => {
+          // Exclude fully purchased books
+          if (book.bookPurchased) {
+            return false;
+          }
+
+          // Check if any chapter is purchased by the user
+          const hasUserPurchasedChapter = book.chapters.some(
+            (chapter: { isPurchased: any }) => chapter.isPurchased
+          );
+
+          // Check if the user has staked in this book
+          const hasUserStaked = book.stakes.some(
+            (stake: { staker: string | undefined }) =>
+              stake.staker === wallet.publicKey?.toString()
+          );
+
+          // Include the book if the user hasn't purchased any chapters or staked in it
+          return !hasUserPurchasedChapter && !hasUserStaked;
+        });
+
+        console.log("Store books:", storeBooks);
+        setStoreBooks(storeBooks);
+      } catch (error) {
+        console.error("Error fetching books:", error);
+        setError("Failed to fetch books. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBooks();
+  }, [connection, wallet]);
+
+  if (loading) {
+    return (
+      <section className="bg-background p-6 rounded-2xl shadow-md border-2 border-[#A8DADC]">
+        <p>Loading store books...</p>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="bg-background p-6 rounded-2xl shadow-md border-2 border-[#A8DADC]">
+        <p className="text-red-500">{error}</p>
+      </section>
+    );
+  }
+
   return (
     <section className="bg-background p-6 rounded-2xl shadow-md border-2 border-[#A8DADC]">
       <div className="flex justify-between items-center mb-4">
@@ -119,11 +120,15 @@ export default function StoreBook() {
           <ChevronRight size={16} className="ml-1" />
         </a>
       </div>
-      <div className="flex space-x-6 overflow-x-auto pb-4">
-        {storeBooks.map((book, index) => (
-          <Book key={index} {...book} showPrice={true} />
-        ))}
-      </div>
+      {storeBooks.length > 0 ? (
+        <div className="flex space-x-6 overflow-x-auto pb-4">
+          {storeBooks.map((book, index) => (
+            <Book key={index} {...book} showPrice={true} />
+          ))}
+        </div>
+      ) : (
+        <p>No books available in the store.</p>
+      )}
     </section>
   );
 }

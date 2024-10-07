@@ -1,29 +1,56 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import BookDetailsPopup from "./BookDetailsPopup";
 
 interface BookProps {
+  pubKey: string; // Add this line
   author: string;
   title: string;
-  chapterPrices: number[];
+  description: string;
+  genre: string;
+  imageUrl: string;
+  publishDate: string;
   fullBookPrice: number;
   totalStake: number;
-  chapters: string[];
-  stakes: { staker: string; amount: number }[];
+  bookPurchased: boolean;
+  chapters: {
+    index: number;
+    isPurchased: boolean;
+    name: string;
+    url: string;
+    price: number;
+  }[];
+  stakes: {
+    staker: string;
+    amount: number;
+    earnings: number;
+  }[];
   showPrice: boolean;
   image?: string;
   isRounded?: boolean;
 }
 
+interface MetaData {
+  description: string;
+  publishDate: string;
+  genre: string;
+  bookImg: string; // Add this new field
+}
+
 export default function Book({
+  pubKey, // Add this line
   author,
   title,
-  chapterPrices,
+  description,
+  genre,
+  imageUrl,
+  publishDate,
   fullBookPrice,
   totalStake,
+  bookPurchased,
   chapters,
   stakes,
   showPrice,
@@ -31,6 +58,22 @@ export default function Book({
   isRounded = false,
 }: BookProps) {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+  // const [metaData, setMetaData] = useState<MetaData | null>(null);
+
+  // useEffect(() => {
+  //   const fetchMetaData = async () => {
+  //     try {
+  //       const metaUrlPubKey = metaUrl + "/" + pubKey;
+  //       const response = await fetch(metaUrlPubKey);
+  //       const data = await response.json();
+  //       setMetaData(data);
+  //     } catch (error) {
+  //       console.error("Error fetching meta data:", error);
+  //     }
+  //   };
+
+  //   fetchMetaData();
+  // }, [metaUrl]);
 
   const handleBookClick = () => {
     setIsPopupOpen(true);
@@ -53,7 +96,9 @@ export default function Book({
             isRounded ? "rounded-full" : "rounded-xl"
           }`}
         >
-          {image ? (
+          {imageUrl ? (
+            <Image src={imageUrl} alt={title} layout="fill" objectFit="cover" />
+          ) : image ? (
             <Image src={image} alt={title} layout="fill" objectFit="cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center p-2">
@@ -71,7 +116,7 @@ export default function Book({
         </span>
         {showPrice && (
           <span className="text-xs text-primary mt-1">
-            Price: {fullBookPrice} lamports
+            Price: {fullBookPrice / 1e9} SOL
           </span>
         )}
       </motion.div>
@@ -79,13 +124,17 @@ export default function Book({
         <BookDetailsPopup
           author={author}
           title={title}
-          chapterPrices={chapterPrices}
+          description={description}
+          publishedDate={publishDate}
+          genre={genre}
           fullBookPrice={fullBookPrice}
           totalStake={totalStake}
+          bookPurchased={bookPurchased}
           chapters={chapters}
           stakes={stakes}
-          image={""}
+          image={imageUrl || image || ""}
           onClose={handleClosePopup}
+          bookPubKey={pubKey} // Add this line
         />
       )}
     </div>

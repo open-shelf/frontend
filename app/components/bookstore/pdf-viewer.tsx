@@ -4,14 +4,20 @@ import styles from "./pdf-viewer.module.css";
 import { useBook } from "./BookContext";
 import Image from "next/image";
 import arrowImage from "./images/arrow_red.png";
+import { useWallet, useConnection } from "@solana/wallet-adapter-react";
+import { ProgramUtils } from "../../utils/programUtils";
+import { PublicKey } from "@solana/web3.js";
+import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+import StakePopup from "./StakePopup";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
-interface ChapterInfo {
+interface Chapter {
   index: number;
-  is_purchased: boolean;
+  isPurchased: boolean;
   name: string;
-  chapter_content: string | null;
+  url: string;
+  price: number;
 }
 
 const PDFViewer = () => {
@@ -27,71 +33,153 @@ const PDFViewer = () => {
   const [pdfKey, setPdfKey] = useState(0);
   const [pdfDimensions, setPdfDimensions] = useState({ width: 0, height: 0 });
   const [showStakeTooltip, setShowStakeTooltip] = useState(false);
+  const [isPurchasing, setIsPurchasing] = useState(false);
+  const wallet = useWallet();
+  const { connection } = useConnection();
 
   const initialScale = 1.2;
 
-  const { bookDetails, stakeAndPurchaseBook } = useBook();
+  const { bookDetails, setBookDetails, stakeAndPurchaseBook } = useBook();
 
-  const [chapterInfos, setChapterInfos] = useState<ChapterInfo[]>([]);
-  const [selectedChapter, setSelectedChapter] = useState<ChapterInfo | null>(
-    null
+  const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
+  const [nextChapter, setNextChapter] = useState<Chapter | null>(null);
+  const [prevChapter, setPrevChapter] = useState<Chapter | null>(null);
+  const [purchasingChapterIndex, setPurchasingChapterIndex] = useState<
+    number | null
+  >(null);
+
+  const [chapters, setChapters] = useState<Chapter[]>(
+    bookDetails?.chapters || []
   );
 
-  const [nextChapter, setNextChapter] = useState<ChapterInfo | null>(null);
-  const [prevChapter, setPrevChapter] = useState<ChapterInfo | null>(null);
+  const [stakeAmount, setStakeAmount] = useState<string>("");
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+
+  const [isPurchasingWholeBook, setIsPurchasingWholeBook] = useState(false);
+  const [isUserStaked, setIsUserStaked] = useState(false);
+  const [userStakeAmount, setUserStakeAmount] = useState<number>(0);
+  const [userRewards, setUserRewards] = useState<number>(0);
+  const [isClaimingReward, setIsClaimingReward] = useState(false);
+
+  const [isStakePopupOpen, setIsStakePopupOpen] = useState(false);
+
+  const handleStake = () => {
+    setIsStakePopupOpen(true);
+  };
+
+  const handleCloseStakePopup = () => {
+    setIsStakePopupOpen(false);
+  };
+
+  const handleStakeSuccess = (updatedBookInfo: any) => {
+    setBookDetails({
+      ...updatedBookInfo,
+      image: bookDetails.image,
+      bookPurchased: bookDetails.bookPurchased,
+    });
+  };
 
   if (!bookDetails) {
     return <div>No book details available</div>;
   }
 
-  const {
-    title,
-    author,
-    chapterPrices,
-    fullBookPrice,
-    totalStake,
-    chapters,
-    stakes,
-    image,
-  } = bookDetails;
+  const { title, author, fullBookPrice, totalStake, stakes, image } =
+    bookDetails;
 
-  const allChaptersPurchased = chapterInfos.every(
-    (chapter) => chapter.is_purchased
-  );
+  const allChaptersPurchased = chapters.every((chapter) => chapter.isPurchased);
 
   useEffect(() => {
-    const fetchChapterInfos = async () => {
-      try {
-        const chapterInfoPromises = chapters.map((chapterUrl) =>
-          fetch(chapterUrl).then((res) => res.json())
-        );
-        const chaptersData = await Promise.all(chapterInfoPromises);
-        setChapterInfos(chaptersData);
-      } catch (error) {
-        console.error("Error fetching chapter information:", error);
-        setError("Failed to fetch chapter information");
-      }
-    };
-
-    fetchChapterInfos();
+    if (chapters.length > 0) {
+      setSelectedChapter(chapters[0]);
+      setPdfURL(chapters[0].url);
+    }
   }, [chapters]);
 
-  const handleChapterSelect = (chapter: ChapterInfo) => {
-    if (chapter.is_purchased) {
+  useEffect(() => {
+    if (bookDetails && wallet.publicKey) {
+      // Check if the user has already staked
+      const userStake = bookDetails.stakes.find(
+        (stake) => stake.staker.toString() === wallet.publicKey?.toString()
+      );
+      if (userStake) {
+        setIsUserStaked(true);
+        setUserStakeAmount(userStake.amount);
+        setUserRewards(userStake.earnings);
+      } else {
+        setIsUserStaked(false);
+        setUserStakeAmount(0);
+        setUserRewards(0);
+      }
+    }
+  }, [bookDetails, wallet.publicKey]);
+
+  const handleChapterSelect = async (chapter: Chapter) => {
+    if (chapter.isPurchased) {
       setSelectedChapter(chapter);
-      setPdfURL(chapter.chapter_content);
+      setPdfURL(chapter.url);
       setPageNumber(1);
       setNumPages(null);
       setPdfKey((prevKey) => prevKey + 1);
     } else {
-      console.log(`Bought chapter ${chapter.index}`);
-      // Here you would typically make an API call to purchase the chapter
-      // For now, we'll just update the local state
-      setChapterInfos((prevChapters) =>
-        prevChapters.map((ch) =>
-          ch.index === chapter.index ? { ...ch, is_purchased: true } : ch
-        )
-      );
+      try {
+        setPurchasingChapterIndex(chapter.index);
+
+        if (!wallet.connected) {
+          throw new Error("Wallet is not connected");
+        }
+
+        console.log("Book public key:", bookDetails.bookPubKey);
+        const programUtils = new ProgramUtils(connection, wallet);
+        const bookPubKey = new PublicKey(bookDetails.bookPubKey);
+        const authorPubKey = new PublicKey(bookDetails.author);
+
+        const tx = await programUtils.purchaseChapter(
+          bookPubKey,
+          authorPubKey,
+          chapter.index
+        );
+
+        console.log(`Chapter ${chapter.index} purchased. Transaction: ${tx}`);
+
+        const updatedBookInfo = await programUtils.fetchBook(bookPubKey);
+
+        updatedBookInfo.bookPubKey = bookPubKey;
+
+        console.log("updated book info", updatedBookInfo);
+        // Update the local state with the new book info
+        setBookDetails({
+          ...updatedBookInfo,
+        });
+
+        // Update the chapters state with the newly purchased chapter
+        const updatedChapters = chapters.map((ch) =>
+          ch.index === chapter.index ? { ...ch, isPurchased: true } : ch
+        );
+        setChapters(updatedChapters);
+
+        // Set the newly purchased chapter as the selected chapter
+        const updatedChapter = { ...chapter, isPurchased: true };
+        setSelectedChapter(updatedChapter);
+        setPdfURL(updatedChapter.url);
+        setPageNumber(1);
+        setNumPages(null);
+        setPdfKey((prevKey) => prevKey + 1);
+      } catch (error) {
+        console.error("Error purchasing chapter:", error);
+
+        // Extract only the error message
+        let errorMessage = "Failed to purchase chapter";
+        if (error instanceof Error) {
+          const match = error.message.match(/Error Message: (.+)$/);
+          if (match) {
+            errorMessage = match[1];
+          }
+        }
+
+        setError(errorMessage);
+      } finally {
+        setPurchasingChapterIndex(null);
+      }
     }
   };
 
@@ -211,18 +299,18 @@ const PDFViewer = () => {
 
   useEffect(() => {
     if (selectedChapter) {
-      const currentIndex = chapterInfos.findIndex(
+      const currentIndex = chapters.findIndex(
         (ch) => ch.index === selectedChapter.index
       );
 
       if (currentIndex > 0) {
-        setPrevChapter(chapterInfos[currentIndex - 1]);
+        setPrevChapter(chapters[currentIndex - 1]);
       } else {
         setPrevChapter(null);
       }
 
-      if (currentIndex < chapterInfos.length - 1) {
-        setNextChapter(chapterInfos[currentIndex + 1]);
+      if (currentIndex < chapters.length - 1) {
+        setNextChapter(chapters[currentIndex + 1]);
       } else {
         setNextChapter(null);
       }
@@ -230,27 +318,214 @@ const PDFViewer = () => {
       setPrevChapter(null);
       setNextChapter(null);
     }
-  }, [selectedChapter, chapterInfos]);
+  }, [selectedChapter, chapters]);
 
-  const handlePurchaseWholeBook = () => {
+  const handlePurchaseWholeBook = async () => {
     if (bookDetails) {
-      stakeAndPurchaseBook(bookDetails.id);
-      console.log("Purchasing whole book:", bookDetails.id);
+      try {
+        setIsPurchasingWholeBook(true);
+
+        if (!wallet.connected) {
+          throw new Error("Wallet is not connected");
+        }
+
+        const programUtils = new ProgramUtils(connection, wallet);
+        const bookPubKey = new PublicKey(bookDetails.bookPubKey);
+        const authorPubKey = new PublicKey(bookDetails.author);
+
+        // Purchase the whole book
+        const tx = await programUtils.purchaseFullBook(
+          bookPubKey,
+          authorPubKey
+        );
+        console.log(`Whole book purchased. Transaction: ${tx}`);
+
+        // Fetch updated book info
+        const updatedBookInfo = await programUtils.fetchBook(bookPubKey);
+
+        updatedBookInfo.bookPubKey = bookPubKey;
+
+        // Update the local state with the new book info
+        setBookDetails({
+          ...updatedBookInfo,
+        });
+
+        // Update all chapters to be purchased
+        const updatedChapters = chapters.map((ch) => ({
+          ...ch,
+          isPurchased: true,
+        }));
+        setChapters(updatedChapters);
+
+        // Set the first chapter as the selected chapter
+        setSelectedChapter(updatedChapters[0]);
+        setPdfURL(updatedChapters[0].url);
+        setPageNumber(1);
+        setNumPages(null);
+        setPdfKey((prevKey) => prevKey + 1);
+
+        console.log("Whole book purchased successfully:", bookDetails.title);
+      } catch (error) {
+        console.error("Error purchasing whole book:", error);
+        let errorMessage = "Failed to purchase the whole book";
+        if (error instanceof Error) {
+          const match = error.message.match(/Error Message: (.+)$/);
+          if (match) {
+            errorMessage = match[1];
+          }
+        }
+        setError(errorMessage);
+      } finally {
+        setIsPurchasingWholeBook(false);
+      }
     }
+  };
+
+  const handleClosePopup = () => {
+    setIsPopupOpen(false);
+    setStakeAmount("");
   };
 
   const handleStakeClick = () => {
-    if (!allChaptersPurchased) {
-      setShowStakeTooltip(true);
-      setTimeout(() => setShowStakeTooltip(false), 3000); // Hide tooltip after 3 seconds
-    } else if (bookDetails) {
-      stakeAndPurchaseBook(bookDetails.id);
-      console.log("Staking for book:", bookDetails.id);
+    if (isUserStaked) {
+      // Show stake details
+      setIsPopupOpen(true);
+    } else {
+      // Show stake input popup
+      setIsPopupOpen(true);
     }
   };
 
+  const handleStakeSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isUserStaked && bookDetails) {
+      try {
+        if (!wallet.connected) {
+          throw new Error("Wallet is not connected");
+        }
+
+        const programUtils = new ProgramUtils(connection, wallet);
+        const bookPubKey = new PublicKey(bookDetails.bookPubKey);
+        const stakeAmountLamports = Math.floor(parseFloat(stakeAmount) * 1e9); // Convert SOL to lamports
+
+        // Call the stakeOnBook function
+        const tx = await programUtils.stakeOnBook(
+          bookPubKey,
+          stakeAmountLamports
+        );
+        console.log(`Staked on book. Transaction: ${tx}`);
+
+        await new Promise((f) => setTimeout(f, 5000));
+
+        // Fetch updated book info
+        const updatedBookInfo = await programUtils.fetchBook(bookPubKey);
+
+        updatedBookInfo.bookPubKey = bookPubKey;
+
+        // Update the local state with the new book info
+        setBookDetails({
+          ...updatedBookInfo,
+        });
+
+        // Update user's stake information
+        const userStake = updatedBookInfo.stakes.find(
+          (stake) => stake.staker.toString() === wallet.publicKey?.toString()
+        );
+
+        if (userStake) {
+          setIsUserStaked(true);
+          setUserStakeAmount(userStake.amount);
+          setUserRewards(0); // Reset rewards for new stake
+        }
+
+        console.log("Successfully staked on book:", bookDetails.title);
+      } catch (error) {
+        console.error("Error staking on book:", error);
+        let errorMessage = "Failed to stake on the book";
+        if (error instanceof Error) {
+          const match = error.message.match(/Error Message: (.+)$/);
+          if (match) {
+            errorMessage = match[1];
+          }
+        }
+        setError(errorMessage);
+      }
+    }
+    // Close the popup after staking
+    handleClosePopup();
+  };
+
+  const handleClaimReward = async () => {
+    if (bookDetails && wallet.connected && userRewards > 0) {
+      try {
+        setIsClaimingReward(true);
+        const programUtils = new ProgramUtils(connection, wallet);
+        const bookPubKey = new PublicKey(bookDetails.bookPubKey);
+
+        // Call the claimReward function
+        const tx = await programUtils.claimStakeEarnings(bookPubKey);
+        console.log(`Earning claimed. Transaction: ${tx}`);
+
+        await new Promise((f) => setTimeout(f, 5000));
+
+        // Fetch updated book info
+        const updatedBookInfo = await programUtils.fetchBook(bookPubKey);
+
+        updatedBookInfo.bookPubKey = bookPubKey;
+
+        console.log("updated book info", updatedBookInfo);
+
+        // Update the local state with the new book info
+        setBookDetails({
+          ...updatedBookInfo,
+        });
+
+        // Update user's stake information
+        const userStake = updatedBookInfo.stakes.find(
+          (stake) => stake.staker.toString() === wallet.publicKey?.toString()
+        );
+
+        if (userStake) {
+          setUserStakeAmount(userStake.amount);
+          setUserRewards(0); // Reset rewards after claiming
+        } else {
+          // If user stake is not found, reset both stake amount and rewards
+          setUserStakeAmount(0);
+          setUserRewards(0);
+        }
+
+        console.log("Successfully claimed reward for book:", bookDetails.title);
+      } catch (error) {
+        console.error("Error claiming reward:", error);
+        let errorMessage = "Failed to claim reward";
+        if (error instanceof Error) {
+          const match = error.message.match(/Error Message: (.+)$/);
+          if (match) {
+            errorMessage = match[1];
+          }
+        }
+        setError(errorMessage);
+      } finally {
+        setIsClaimingReward(false);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        setError(null);
+      }, 5000); // Error message will disappear after 5 seconds
+
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
+
   return (
     <div ref={containerRef} className={styles.container}>
+      <div className={styles.walletWidgetContainer}>
+        <WalletMultiButton />
+      </div>
       <div className={styles.sidebar}>
         <div className={styles.sidebarHeader}>
           <button onClick={handleGoBack} className={styles.backButton}>
@@ -259,16 +534,21 @@ const PDFViewer = () => {
           <h2 className={styles.bookTitle}>{title}</h2>
         </div>
         <div className={styles.chapterList}>
-          {chapterInfos.map((chapter) => (
+          {chapters.map((chapter) => (
             <div key={chapter.index} className={styles.chapterItem}>
               <span>{chapter.name}</span>
               <button
                 onClick={() => handleChapterSelect(chapter)}
                 className={
-                  chapter.is_purchased ? styles.readButton : styles.buyButton
+                  chapter.isPurchased ? styles.readButton : styles.buyButton
                 }
+                disabled={purchasingChapterIndex === chapter.index}
               >
-                {chapter.is_purchased ? "Read" : "Buy"}
+                {chapter.isPurchased
+                  ? "Read"
+                  : purchasingChapterIndex === chapter.index
+                  ? "Purchasing..."
+                  : `${chapter.price / 1e9} sol`}
               </button>
             </div>
           ))}
@@ -278,34 +558,29 @@ const PDFViewer = () => {
             <button
               onClick={handlePurchaseWholeBook}
               className={styles.purchaseButton}
+              disabled={isPurchasingWholeBook}
             >
-              Purchase Whole Book
+              {isPurchasingWholeBook ? "Purchasing..." : `Purchase Full Book`}
             </button>
           )}
-          <div className={styles.stakeButtonWrapper}>
-            <button
-              onClick={handleStakeClick}
-              onMouseEnter={() =>
-                !allChaptersPurchased && setShowStakeTooltip(true)
-              }
-              onMouseLeave={() => setShowStakeTooltip(false)}
-              className={`${styles.stakeButton} ${
-                !allChaptersPurchased ? styles.disabledStake : ""
-              }`}
-              disabled={!allChaptersPurchased}
-            >
-              Stake
-            </button>
-            {showStakeTooltip && !allChaptersPurchased && (
-              <div className={styles.stakeTooltip}>
-                All chapters must be purchased before staking
-              </div>
+          <button
+            onClick={handleStake}
+            className={`${styles.stakeButton} ${
+              !allChaptersPurchased ? styles.disabledStake : ""
+            }`}
+            disabled={!allChaptersPurchased}
+          >
+            {isUserStaked ? "View Stake" : "Stake"}
+            {!allChaptersPurchased && (
+              <span className={styles.stakeSubheading}>
+                (must be purchased first)
+              </span>
             )}
-          </div>
+          </button>
         </div>
       </div>
       <div className={styles.pdfContainer}>
-        {selectedChapter && selectedChapter.is_purchased && pdfURL ? (
+        {selectedChapter && selectedChapter.isPurchased && pdfURL ? (
           <Document
             key={pdfKey}
             file={pdfURL}
@@ -339,7 +614,7 @@ const PDFViewer = () => {
           </Document>
         ) : (
           <div className={styles.instructions}>
-            {selectedChapter && !selectedChapter.is_purchased
+            {selectedChapter && !selectedChapter.isPurchased
               ? "Please purchase this chapter to read it."
               : "Select a chapter from the sidebar to start reading."}
           </div>
@@ -364,10 +639,10 @@ const PDFViewer = () => {
             <button
               onClick={() => handleChapterSelect(prevChapter)}
               className={
-                prevChapter.is_purchased ? styles.readButton : styles.buyButton
+                prevChapter.isPurchased ? styles.readButton : styles.buyButton
               }
             >
-              {prevChapter.is_purchased ? "Read Prev" : "Buy Prev"}
+              {prevChapter.isPurchased ? "Read Prev" : "Buy Prev"}
             </button>
           )}
           <button
@@ -394,34 +669,44 @@ const PDFViewer = () => {
             +
           </button>
           <button onClick={toggleSideBySide} className={styles.button}>
-            {isSideBySide ? "Single" : "Double"}
+            {isSideBySide ? "One page View" : "Two Page view"}
           </button>
           {nextChapter && (
             <button
               onClick={() => handleChapterSelect(nextChapter)}
               className={
-                nextChapter.is_purchased ? styles.readButton : styles.buyButton
+                nextChapter.isPurchased ? styles.readButton : styles.buyButton
               }
             >
-              {nextChapter.is_purchased ? "Read Next" : "Buy Next"}
+              {nextChapter.isPurchased ? "Read Next" : "Buy Next"}
             </button>
           )}
         </div>
       </div>
-      {error && <div className={styles.error}>{error}</div>}
+      {error && <div className={styles.errorOverlay}>{error}</div>}
 
-      {/* Update the debug info */}
-      <div className={styles.debugInfo}>
+      <StakePopup
+        isOpen={isStakePopupOpen}
+        onClose={handleCloseStakePopup}
+        bookPubKey={bookDetails.bookPubKey}
+        stakes={bookDetails.stakes}
+        onStakeSuccess={handleStakeSuccess}
+        totalStake={bookDetails.totalStake} // Add this line
+      />
+
+      {/* DEBUG INFO */}
+      {/* <div className={styles.debugInfo}>
         <p>Is Last Page: {isLastPage ? "Yes" : "No"}</p>
-        <p>Next PDF URL: {pdfURL || "None"}</p>
+        <p>Current PDF URL: {pdfURL || "None"}</p>
         <p>
-          Next Chapter Purchased: {selectedChapter?.is_purchased ? "Yes" : "No"}
+          Current Chapter Purchased:{" "}
+          {selectedChapter?.isPurchased ? "Yes" : "No"}
         </p>
         <p>
           PDF Dimensions: {pdfDimensions.width}x{pdfDimensions.height}
         </p>
         <p>Current Scale: {scale.toFixed(2)}</p>
-      </div>
+      </div> */}
     </div>
   );
 };

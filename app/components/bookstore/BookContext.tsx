@@ -4,15 +4,22 @@ import { createContext, useContext, useState, ReactNode } from "react";
 
 // Define the structure for the book details
 interface BookDetails {
-  id: string; // Add this line
+  id: string;
   title: string;
   author: string;
-  chapterPrices: number[];
   fullBookPrice: number;
   totalStake: number;
-  chapters: string[];
+  chapters: {
+    index: number;
+    isPurchased: boolean;
+    name: string;
+    url: string;
+    price: number;
+  }[];
   stakes: { staker: string; amount: number }[];
   image: string;
+  bookPubKey: string;
+  bookPurchased: boolean;
 }
 
 // Define the context type

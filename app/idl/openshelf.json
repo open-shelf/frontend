@@ -1,5 +1,5 @@
 {
-  "address": "7nMw3278JMFJrCwtiWW4kLe7qMjY9zAftk6t8gNCVNEH",
+  "address": "AGVyPYiXUtSnKqqgLWcs5LAfh94ct1CtuaiCSFuGMxxW",
   "metadata": {
     "name": "openshelf",
     "version": "0.1.0",
@@ -9,16 +9,7 @@
   "instructions": [
     {
       "name": "add_book",
-      "discriminator": [
-        181,
-        117,
-        249,
-        173,
-        108,
-        163,
-        209,
-        238
-      ],
+      "discriminator": [181, 117, 249, 173, 108, 163, 209, 238],
       "accounts": [
         {
           "name": "book",
@@ -41,23 +32,22 @@
           "type": "string"
         },
         {
-          "name": "meta_url",
+          "name": "description",
+          "type": "string"
+        },
+        {
+          "name": "genre",
+          "type": "string"
+        },
+        {
+          "name": "image",
           "type": "string"
         }
       ]
     },
     {
       "name": "add_chapter",
-      "discriminator": [
-        70,
-        219,
-        222,
-        77,
-        39,
-        136,
-        132,
-        233
-      ],
+      "discriminator": [70, 219, 222, 77, 39, 136, 132, 233],
       "accounts": [
         {
           "name": "book",
@@ -67,9 +57,7 @@
           "name": "author",
           "writable": true,
           "signer": true,
-          "relations": [
-            "book"
-          ]
+          "relations": ["book"]
         },
         {
           "name": "system_program",
@@ -97,16 +85,7 @@
     },
     {
       "name": "claim_staker_earnings",
-      "discriminator": [
-        117,
-        245,
-        169,
-        16,
-        136,
-        196,
-        36,
-        84
-      ],
+      "discriminator": [117, 245, 169, 16, 136, 196, 36, 84],
       "accounts": [
         {
           "name": "book",
@@ -126,16 +105,7 @@
     },
     {
       "name": "create_book_asset",
-      "discriminator": [
-        63,
-        105,
-        59,
-        78,
-        121,
-        55,
-        218,
-        112
-      ],
+      "discriminator": [63, 105, 59, 78, 121, 55, 218, 112],
       "accounts": [
         {
           "name": "signer",
@@ -151,6 +121,9 @@
           "writable": true
         },
         {
+          "name": "book"
+        },
+        {
           "name": "asset",
           "writable": true,
           "signer": true
@@ -164,25 +137,11 @@
           "address": "11111111111111111111111111111111"
         }
       ],
-      "args": [
-        {
-          "name": "book_pub_key",
-          "type": "string"
-        }
-      ]
+      "args": []
     },
     {
       "name": "create_chapter_asset",
-      "discriminator": [
-        234,
-        23,
-        202,
-        174,
-        61,
-        95,
-        91,
-        195
-      ],
+      "discriminator": [234, 23, 202, 174, 61, 95, 91, 195],
       "accounts": [
         {
           "name": "signer",
@@ -196,6 +155,9 @@
         {
           "name": "collection",
           "writable": true
+        },
+        {
+          "name": "book"
         },
         {
           "name": "asset",
@@ -212,10 +174,6 @@
         }
       ],
       "args": [
-        {
-          "name": "book_pub_key",
-          "type": "string"
-        },
         {
           "name": "chapter_index",
           "type": "u64"
@@ -224,16 +182,7 @@
     },
     {
       "name": "create_user_collection",
-      "discriminator": [
-        26,
-        51,
-        177,
-        244,
-        95,
-        195,
-        81,
-        131
-      ],
+      "discriminator": [26, 51, 177, 244, 95, 195, 81, 131],
       "accounts": [
         {
           "name": "signer",
@@ -262,16 +211,7 @@
     },
     {
       "name": "purchase_chapter",
-      "discriminator": [
-        123,
-        139,
-        195,
-        216,
-        156,
-        158,
-        134,
-        67
-      ],
+      "discriminator": [123, 139, 195, 216, 156, 158, 134, 67],
       "accounts": [
         {
           "name": "book",
@@ -304,16 +244,7 @@
     },
     {
       "name": "purchase_full_book",
-      "discriminator": [
-        114,
-        134,
-        89,
-        208,
-        117,
-        183,
-        37,
-        232
-      ],
+      "discriminator": [114, 134, 89, 208, 117, 183, 37, 232],
       "accounts": [
         {
           "name": "book",
@@ -341,16 +272,7 @@
     },
     {
       "name": "stake_on_book",
-      "discriminator": [
-        63,
-        5,
-        158,
-        206,
-        162,
-        224,
-        240,
-        1
-      ],
+      "discriminator": [63, 5, 158, 206, 162, 224, 240, 1],
       "accounts": [
         {
           "name": "book",
@@ -377,29 +299,11 @@
   "accounts": [
     {
       "name": "BaseCollectionV1",
-      "discriminator": [
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0
-      ]
+      "discriminator": [0, 0, 0, 0, 0, 0, 0, 0]
     },
     {
       "name": "Book",
-      "discriminator": [
-        121,
-        34,
-        121,
-        35,
-        91,
-        62,
-        85,
-        222
-      ]
+      "discriminator": [121, 34, 121, 35, 91, 62, 85, 222]
     }
   ],
   "errors": [
@@ -485,8 +389,12 @@
             "type": "string"
           },
           {
-            "name": "meta_url",
-            "type": "string"
+            "name": "metadata",
+            "type": {
+              "defined": {
+                "name": "MetaData"
+              }
+            }
           },
           {
             "name": "full_book_price",
@@ -577,6 +485,30 @@
           },
           {
             "name": "CollectionV1"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MetaData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "description",
+            "type": "string"
+          },
+          {
+            "name": "publish_date",
+            "type": "i64"
+          },
+          {
+            "name": "genre",
+            "type": "string"
+          },
+          {
+            "name": "image_url",
+            "type": "string"
           }
         ]
       }

@@ -8,10 +8,13 @@ import { ProgramUtils } from "../../utils/programUtils";
 import { PublicKey } from "@solana/web3.js";
 
 interface BookData {
-  pubKey: string; // Add this line
+  pubKey: string;
   author: string;
   title: string;
-  metaUrl: string;
+  description: string;
+  genre: string;
+  imageUrl: string;
+  publishDate: string;
   fullBookPrice: number;
   totalStake: number;
   bookPurchased: boolean;

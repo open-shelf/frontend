@@ -366,17 +366,19 @@ const StakedBooksPage = () => {
                             Claim Earnings
                           </button>
                         )}
-                        {walletStake && walletStake.amount > 0 && (
-                          <button
-                            className="bg-[#E63946] text-white px-4 py-2 rounded hover:bg-[#C1121F] transition-colors"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleOffRamp(book);
-                            }}
-                          >
-                            Withdraw To Bank/Credit Card
-                          </button>
-                        )}
+                        {walletEarnings > 0 &&
+                          walletStake &&
+                          walletStake.amount > 0 && (
+                            <button
+                              className="bg-[#E63946] text-white px-4 py-2 rounded hover:bg-[#C1121F] transition-colors"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleOffRamp(book);
+                              }}
+                            >
+                              Withdraw To Bank/Credit Card
+                            </button>
+                          )}
                       </div>
                     </li>
                   );

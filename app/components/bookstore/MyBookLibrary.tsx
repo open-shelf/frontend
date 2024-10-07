@@ -11,6 +11,10 @@ interface BookData {
   pubKey: string;
   author: string;
   title: string;
+  description: string;
+  genre: string;
+  imageUrl: string;
+  publishDate: string;
   metaUrl: string;
   fullBookPrice: number;
   totalStake: number;

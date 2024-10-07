@@ -9,7 +9,10 @@ interface BookProps {
   pubKey: string; // Add this line
   author: string;
   title: string;
-  metaUrl: string;
+  description: string;
+  genre: string;
+  imageUrl: string;
+  publishDate: string;
   fullBookPrice: number;
   totalStake: number;
   bookPurchased: boolean;
@@ -41,7 +44,10 @@ export default function Book({
   pubKey, // Add this line
   author,
   title,
-  metaUrl,
+  description,
+  genre,
+  imageUrl,
+  publishDate,
   fullBookPrice,
   totalStake,
   bookPurchased,
@@ -52,22 +58,22 @@ export default function Book({
   isRounded = false,
 }: BookProps) {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const [metaData, setMetaData] = useState<MetaData | null>(null);
+  // const [metaData, setMetaData] = useState<MetaData | null>(null);
 
-  useEffect(() => {
-    const fetchMetaData = async () => {
-      try {
-        const metaUrlPubKey = metaUrl + "/" + pubKey;
-        const response = await fetch(metaUrlPubKey);
-        const data = await response.json();
-        setMetaData(data);
-      } catch (error) {
-        console.error("Error fetching meta data:", error);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchMetaData = async () => {
+  //     try {
+  //       const metaUrlPubKey = metaUrl + "/" + pubKey;
+  //       const response = await fetch(metaUrlPubKey);
+  //       const data = await response.json();
+  //       setMetaData(data);
+  //     } catch (error) {
+  //       console.error("Error fetching meta data:", error);
+  //     }
+  //   };
 
-    fetchMetaData();
-  }, [metaUrl]);
+  //   fetchMetaData();
+  // }, [metaUrl]);
 
   const handleBookClick = () => {
     setIsPopupOpen(true);
@@ -90,13 +96,8 @@ export default function Book({
             isRounded ? "rounded-full" : "rounded-xl"
           }`}
         >
-          {metaData && metaData.bookImg ? (
-            <Image
-              src={metaData.bookImg}
-              alt={title}
-              layout="fill"
-              objectFit="cover"
-            />
+          {imageUrl ? (
+            <Image src={imageUrl} alt={title} layout="fill" objectFit="cover" />
           ) : image ? (
             <Image src={image} alt={title} layout="fill" objectFit="cover" />
           ) : (
@@ -119,19 +120,19 @@ export default function Book({
           </span>
         )}
       </motion.div>
-      {isPopupOpen && metaData && (
+      {isPopupOpen && (
         <BookDetailsPopup
           author={author}
           title={title}
-          description={metaData.description}
-          publishedDate={metaData.publishDate}
-          genre={metaData.genre}
+          description={description}
+          publishedDate={publishDate}
+          genre={genre}
           fullBookPrice={fullBookPrice}
           totalStake={totalStake}
           bookPurchased={bookPurchased}
           chapters={chapters}
           stakes={stakes}
-          image={metaData.bookImg || image || ""}
+          image={imageUrl || image || ""}
           onClose={handleClosePopup}
           bookPubKey={pubKey} // Add this line
         />

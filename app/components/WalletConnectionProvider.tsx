@@ -14,6 +14,7 @@ require("@solana/wallet-adapter-react-ui/styles.css");
 const WalletConnectionProvider: FC<{ children: ReactNode }> = ({
   children,
 }) => {
+  // const endpoint = useMemo(() => "https://api.devnet.solana.com", []);
   const endpoint = useMemo(() => "http://127.0.0.1:8899", []);
   const wallets = useMemo(() => [new SolflareWalletAdapter()], []);
 

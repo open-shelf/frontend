@@ -4,10 +4,10 @@ import Image from "next/image";
 import vinyl from "./shelf_content/vinyls/v2.webp";
 
 const vinyls = [
-  { id: 1, image: vinyl, title: "Album One" },
-  { id: 2, image: vinyl, title: "Album Two" },
-  { id: 3, image: vinyl, title: "Album Three" },
-  { id: 4, image: vinyl, title: "More Three" },
+  { id: 1, image: vinyl, title: "Norman Rockwell" },
+  { id: 2, image: vinyl, title: "Abbey Road" },
+  { id: 3, image: vinyl, title: "StarBoy" },
+  { id: 4, image: vinyl, title: "More Albums" },
 ];
 
 const VinylShelf: React.FC = () => {
@@ -35,6 +35,13 @@ const VinylShelf: React.FC = () => {
               quality={100}
             />
           </div>
+          {hoveredId === vinyl.id && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full">
+              <p className="text-white text-sm font-semibold text-center px-2">
+                {vinyl.title}
+              </p>
+            </div>
+          )}
         </motion.div>
       ))}
     </div>

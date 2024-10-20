@@ -1,14 +1,14 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import styles from "./pdf-viewer.module.css";
-import { useBook } from "./BookContext";
+import { useBooks } from "../bookstore/BookContext";
 import Image from "next/image";
 import arrowImage from "./images/arrow_red.png";
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 import { ProgramUtils } from "../../utils/programUtils";
 import { PublicKey } from "@solana/web3.js";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
-import StakePopup from "./StakePopup";
+import StakePopup from "../bookstore/StakePopup";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
@@ -39,7 +39,7 @@ const PDFViewer = () => {
 
   const initialScale = 1.2;
 
-  const { bookDetails, setBookDetails, stakeAndPurchaseBook } = useBook();
+  const { bookDetails, setBookDetails, stakeAndPurchaseBook } = useBooks();
 
   const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
   const [nextChapter, setNextChapter] = useState<Chapter | null>(null);

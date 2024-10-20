@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Search, X } from "lucide-react";
-import WalletConnectButton from "../WalletConnectButton";
+import WalletConnectButton from "../wallet/WalletConnectButton";
 import Link from "next/link";
 
 export default function SearchBar() {

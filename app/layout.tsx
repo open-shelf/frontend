@@ -5,7 +5,7 @@ import { BookProvider } from "./components/bookstore/BookContext";
 import dynamic from "next/dynamic";
 
 const WalletConnectionProvider = dynamic(
-  () => import("./components/WalletConnectionProvider"),
+  () => import("./components/wallet/WalletConnectionProvider"),
   { ssr: false }
 );
 

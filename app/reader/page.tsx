@@ -2,12 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { useBooks } from "../components/bookstore/BookContext";
-import PDFViewer from "../components/bookstore/pdf-viewer";
+import PDFViewer from "../components/pdf/PDFViewer";
 
 const ReaderPage = () => {
   const searchParams = useSearchParams();
-  const { books } = useBooks();
   const [bookPubKey, setBookPubKey] = useState<string | null>(null);
 
   useEffect(() => {

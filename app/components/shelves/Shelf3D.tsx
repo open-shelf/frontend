@@ -6,7 +6,7 @@ import Shelf from "./Shelf";
 import BookShelf from "./BookShelf"; // Importing BookShelf component
 import VinylShelf from "./VinylShelf"; // Importing VinylShelf component
 import ConsoleShelf from "./ConsoleShelf"; // Importing ConsoleShelf component
-import WalletConnectButton from "../WalletConnectButton";
+import WalletConnectButton from "../wallet/WalletConnectButton";
 
 const Shelf3D: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);

@@ -1,109 +1,34 @@
 import Image from "next/image";
 import { motion } from "framer-motion";
-import Link from "next/link";
-import { useBook } from "./BookContext";
+import { useBooks } from "./BookContext";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { ProgramUtils } from "../../utils/programUtils";
+import { ProgramUtils, Book as BookType } from "../../utils/programUtils";
 import { useConnection } from "@solana/wallet-adapter-react";
 import { PublicKey } from "@solana/web3.js";
 import StakePopup from "./StakePopup";
 
 interface BookDetailsPopupProps {
-  title: string;
-  author: string;
-  description: string;
-  publishedDate: string;
-  genre: string;
-  fullBookPrice: number;
-  totalStake: number;
-  bookPurchased: boolean;
-  chapters: {
-    index: number;
-    isPurchased: boolean;
-    name: string;
-    url: string;
-    price: number;
-  }[];
-  stakes: {
-    staker: string;
-    amount: number;
-    earnings: number;
-  }[];
-  image: string;
+  book: BookType;
   onClose: () => void;
-  bookPubKey: string; // Add this prop
 }
 
 export default function BookDetailsPopup({
-  author,
-  title,
-  description,
-  publishedDate,
-  genre,
-  fullBookPrice,
-  totalStake,
-  bookPurchased: initialBookPurchased,
-  chapters,
-  stakes,
-  image,
+  book,
   onClose,
-  bookPubKey, // Make sure this prop is included
 }: BookDetailsPopupProps) {
-  const { setBookDetails } = useBook();
+  const { books, setBooks } = useBooks();
   const router = useRouter();
-  const [showTooltip, setShowTooltip] = useState(false);
   const { connection } = useConnection();
   const wallet = useWallet();
   const [isLoading, setIsLoading] = useState(false);
-  const [isBookPurchased, setIsBookPurchased] = useState(initialBookPurchased);
-  const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const [stakeAmount, setStakeAmount] = useState<string>("");
-  const [isUserStaked, setIsUserStaked] = useState(false);
-  const [userStakeAmount, setUserStakeAmount] = useState<number>(0);
-  const [userRewards, setUserRewards] = useState<number>(0);
-  const [isClaimingReward, setIsClaimingReward] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [isStakePopupOpen, setIsStakePopupOpen] = useState(false);
-
-  useEffect(() => {
-    if (stakes && wallet.publicKey) {
-      const userStake = stakes.find(
-        (stake) => stake.staker === wallet.publicKey?.toString()
-      );
-      if (userStake) {
-        setIsUserStaked(true);
-        setUserStakeAmount(userStake.amount);
-        setUserRewards(userStake.earnings);
-      } else {
-        setIsUserStaked(false);
-        setUserStakeAmount(0);
-        setUserRewards(0);
-      }
-    }
-  }, [stakes, wallet.publicKey]);
+  const [error, setError] = useState<string | null>(null);
+  const [showMintNFTPopup, setShowMintNFTPopup] = useState(false);
 
   const handleViewPDF = () => {
-    setBookDetails({
-      title,
-      author,
-      fullBookPrice,
-      totalStake,
-      chapters: chapters.map((chapter) => ({
-        index: chapter.index,
-        isPurchased: chapter.isPurchased,
-        name: chapter.name,
-        url: chapter.url,
-        price: chapter.price,
-      })),
-      stakes,
-      image,
-      bookPubKey,
-      bookPurchased: isBookPurchased,
-      id: bookPubKey,
-    });
-    router.push("/reader");
+    router.push(`/reader?bookPubKey=${book.bookPubKey}`);
   };
 
   const handleStake = () => {
@@ -114,29 +39,48 @@ export default function BookDetailsPopup({
     setIsStakePopupOpen(false);
   };
 
-  const handleStakeSuccess = (updatedBookInfo: any) => {
-    setBookDetails({
-      ...updatedBookInfo,
-      image,
-      bookPurchased: isBookPurchased,
-    });
+  const handleStakeSuccess = (updatedBookInfo: BookType) => {
+    const updatedBooks = books.map((b) =>
+      b.bookPubKey === updatedBookInfo.bookPubKey ? updatedBookInfo : b
+    );
+    setBooks(updatedBooks);
   };
 
   const handlePurchaseFullBook = async () => {
-    console.log(bookPubKey);
     if (!wallet.publicKey) {
-      console.error("Wallet not connected");
+      setError("Please connect your wallet to purchase the book.");
+      return;
+    }
+
+    const balance = await connection.getBalance(wallet.publicKey);
+    if (balance < book.fullBookPrice) {
+      setError("Insufficient balance to purchase the book.");
       return;
     }
 
     setIsLoading(true);
     try {
-      console.log(bookPubKey);
       const programUtils = new ProgramUtils(connection, wallet);
 
-      const bookPubKeyObj = new PublicKey(bookPubKey);
-      const authorPubKeyObj = new PublicKey(author);
+      // Wait for the collection public key to be initialized
+      await programUtils.initializeCollectionPubKey();
 
+      console.log(
+        "Collection PubKey:",
+        programUtils.collectionPubKey?.toString()
+      );
+      if (!programUtils.collectionPubKey) {
+        console.log(
+          "No collection public key found. Prompting to mint user NFT."
+        );
+        setShowMintNFTPopup(true);
+        return;
+      }
+
+      const bookPubKeyObj = new PublicKey(book.bookPubKey);
+      const authorPubKeyObj = new PublicKey(book.author);
+
+      console.log("Attempting to purchase full book...");
       const tx = await programUtils.purchaseFullBook(
         bookPubKeyObj,
         authorPubKeyObj
@@ -145,28 +89,43 @@ export default function BookDetailsPopup({
 
       await new Promise((f) => setTimeout(f, 5000));
 
-      // Refresh book info
+      console.log("Fetching updated book info...");
       const updatedBookInfo = await programUtils.fetchBook(bookPubKeyObj);
 
-      updatedBookInfo.bookPubKey = bookPubKeyObj;
+      // Update the books context
+      const updatedBooks = books.map((b) =>
+        b.bookPubKey === book.bookPubKey ? updatedBookInfo : b
+      );
+      setBooks(updatedBooks);
 
-      console.log(updatedBookInfo);
-      // Update the local state with the new book info
-      const updatedBookDetails = {
-        ...updatedBookInfo,
-        image,
-        bookPurchased: true, // Add this line
-      };
-      setBookDetails(updatedBookDetails);
-
-      // Update the local purchase state
-      setIsBookPurchased(true);
-
-      console.log("Book purchased:", updatedBookInfo.bookPurchased);
+      console.log(
+        "Book purchased:",
+        updatedBookInfo.userOwnership.bookPurchased
+      );
     } catch (error) {
       console.error("Error purchasing full book:", error);
+      if (error instanceof Error) {
+        setError(`Failed to purchase book: ${error.message}`);
+      } else {
+        setError("Failed to purchase book. Please try again.");
+      }
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleMintUserNFT = async () => {
+    try {
+      const programUtils = new ProgramUtils(connection, wallet);
+      console.log("Attempting to create user collection...");
+      await programUtils.createUserCollection();
+      console.log("User collection created successfully.");
+      setShowMintNFTPopup(false);
+      // Refresh the book data or perform any necessary updates
+      // You might want to call a function to refresh the book data here
+    } catch (error) {
+      console.error("Error minting user NFT:", error);
+      setError("Failed to mint user NFT. Please try again.");
     }
   };
 
@@ -207,10 +166,10 @@ export default function BookDetailsPopup({
         </button>
         <div className="flex flex-col md:flex-row">
           <div className="md:w-1/3 mb-4 md:mb-0 md:mr-6">
-            {image && (
+            {book.metadata.imageUrl && (
               <Image
-                src={image}
-                alt={title}
+                src={book.metadata.imageUrl}
+                alt={book.title}
                 width={200}
                 height={300}
                 objectFit="cover"
@@ -219,41 +178,37 @@ export default function BookDetailsPopup({
             )}
           </div>
           <div className="md:w-2/3">
-            <h2 className="text-3xl font-bold mb-2 text-[#1D3557]">{title}</h2>
-            {/* <p className="text-xl mb-4 text-[#457B9D]">By {author}</p> */}
-            {description && <p className="mb-4 text-gray-700">{description}</p>}
-            {publishedDate && (
-              <p className="mb-2 text-gray-600">
-                <span className="font-semibold">Published:</span>{" "}
-                {publishedDate}
-              </p>
-            )}
-            {genre && (
-              <p className="mb-4 text-gray-600">
-                <span className="font-semibold">Genre:</span> {genre}
-              </p>
-            )}
+            <h2 className="text-3xl font-bold mb-2 text-[#1D3557]">
+              {book.title}
+            </h2>
+            <p className="mb-4 text-gray-700">{book.metadata.description}</p>
+            <p className="mb-2 text-gray-600">
+              <span className="font-semibold">Published:</span>{" "}
+              {new Date(book.metadata.publishDate).toLocaleDateString()}
+            </p>
+            <p className="mb-4 text-gray-600">
+              <span className="font-semibold">Genre:</span>{" "}
+              {book.metadata.genre}
+            </p>
             <p className="mb-2 text-gray-600">
               <span className="font-semibold">Price:</span>{" "}
-              {fullBookPrice / 1e9} SOL
+              {book.fullBookPrice / 1e9} SOL
             </p>
             <p className="mb-4 text-gray-600">
               <span className="font-semibold">Total Stake:</span>{" "}
-              {totalStake / 1e9} SOL
+              {book.totalStake / 1e9} SOL
             </p>
 
             <div className="flex flex-wrap items-center gap-2 mt-4">
-              {chapters.length > 0 && (
-                <Link href="/reader">
-                  <button
-                    className="bg-[#1D3557] text-white px-4 py-2 rounded hover:bg-[#2A4A6D] transition-colors"
-                    onClick={handleViewPDF}
-                  >
-                    View PDF
-                  </button>
-                </Link>
+              {book.chapters.length > 0 && (
+                <button
+                  className="bg-[#1D3557] text-white px-4 py-2 rounded hover:bg-[#2A4A6D] transition-colors"
+                  onClick={handleViewPDF}
+                >
+                  View PDF
+                </button>
               )}
-              {!isBookPurchased ? (
+              {!book.userOwnership.bookPurchased ? (
                 <button
                   onClick={handlePurchaseFullBook}
                   className={`bg-[#2ecc71] text-white px-4 py-2 rounded hover:bg-[#27ae60] transition-colors ${
@@ -264,35 +219,19 @@ export default function BookDetailsPopup({
                   {isLoading ? "Processing..." : "Purchase Book"}
                 </button>
               ) : (
-                <p className="text-green-600 font-semibold"></p>
-              )}
-              {!isBookPurchased && (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6 text-gray-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 7l5 5m0 0l-5 5m5-5H6"
-                  />
-                </svg>
+                <p className="text-green-600 font-semibold">Book Purchased</p>
               )}
               <div className="relative inline-block">
                 <button
                   onClick={handleStake}
                   className={`px-4 py-2 rounded transition-colors ${
-                    isBookPurchased
+                    book.userOwnership.bookPurchased
                       ? "bg-[#FFD700] text-black hover:bg-[#FFC300]"
                       : "bg-gray-300 text-gray-500 cursor-not-allowed"
                   }`}
-                  disabled={!isBookPurchased}
+                  disabled={!book.userOwnership.bookPurchased}
                 >
-                  {isUserStaked ? "View Stake" : "Stake"}
+                  {book.userOwnership.amount > 0 ? "View Stake" : "Stake"}
                 </button>
               </div>
             </div>
@@ -302,11 +241,34 @@ export default function BookDetailsPopup({
         <StakePopup
           isOpen={isStakePopupOpen}
           onClose={handleCloseStakePopup}
-          bookPubKey={bookPubKey}
-          stakes={stakes}
+          bookPubKey={book.bookPubKey}
+          stakes={book.stakes}
           onStakeSuccess={handleStakeSuccess}
-          totalStake={totalStake} // Add this line
+          totalStake={book.totalStake}
         />
+
+        {showMintNFTPopup && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-8 rounded-lg">
+              <h2 className="text-xl font-bold mb-4">Mint User NFT</h2>
+              <p className="mb-4">
+                You need to mint a user NFT before making a purchase.
+              </p>
+              <button
+                onClick={handleMintUserNFT}
+                className="bg-blue-500 text-white px-4 py-2 rounded mr-2"
+              >
+                Mint User NFT
+              </button>
+              <button
+                onClick={() => setShowMintNFTPopup(false)}
+                className="bg-gray-300 px-4 py-2 rounded"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
 
         {error && (
           <div className="fixed bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded">

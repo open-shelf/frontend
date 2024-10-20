@@ -1,48 +1,27 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { useBooks } from "../components/bookstore/BookContext";
 import PDFViewer from "../components/bookstore/pdf-viewer";
-import { useBook } from "../components/bookstore/BookContext";
 
 const ReaderPage = () => {
   const searchParams = useSearchParams();
-  const { bookDetails, setBookDetails } = useBook();
+  const { books } = useBooks();
+  const [bookPubKey, setBookPubKey] = useState<string | null>(null);
 
   useEffect(() => {
-    // Retrieve book details from local storage on component mount
-    const storedBookDetails = localStorage.getItem("bookDetails");
-    if (storedBookDetails && !bookDetails) {
-      setBookDetails(JSON.parse(storedBookDetails));
+    const bookPubKey = searchParams.get("bookPubKey");
+    if (bookPubKey) {
+      setBookPubKey(bookPubKey);
     }
-  }, []);
+  }, [searchParams]);
 
-  useEffect(() => {
-    // Save book details to local storage whenever it changes
-    if (bookDetails) {
-      localStorage.setItem("bookDetails", JSON.stringify(bookDetails));
-    }
-  }, [bookDetails]);
-
-  console.log("We are here!");
-  console.log(bookDetails);
-
-  if (!bookDetails) {
-    return (
-      <div>
-        Loading book details... If this persists, please go back and select a
-        book.
-      </div>
-    );
+  if (!bookPubKey) {
+    return <div>No book selected</div>;
   }
 
-  return (
-    <div className="h-screen flex flex-col">
-      <main className="flex-grow">
-        <PDFViewer />
-      </main>
-    </div>
-  );
+  return <PDFViewer bookPubKey={bookPubKey} />;
 };
 
 export default ReaderPage;

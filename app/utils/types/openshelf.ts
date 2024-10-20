@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/openshelf.json`.
  */
 export type Openshelf = {
-  "address": "AGVyPYiXUtSnKqqgLWcs5LAfh94ct1CtuaiCSFuGMxxW",
+  "address": "FYumxk5wR7RWKa8M71hzJbiExSpi3AgAgteah1xqH6kD",
   "metadata": {
     "name": "openshelf",
     "version": "0.1.0",
@@ -57,6 +57,18 @@ export type Openshelf = {
         {
           "name": "image",
           "type": "string"
+        },
+        {
+          "name": "chapters",
+          "type": {
+            "option": {
+              "vec": {
+                "defined": {
+                  "name": "chapterInput"
+                }
+              }
+            }
+          }
         }
       ]
     },
@@ -139,101 +151,6 @@ export type Openshelf = {
       "args": []
     },
     {
-      "name": "createBookAsset",
-      "discriminator": [
-        63,
-        105,
-        59,
-        78,
-        121,
-        55,
-        218,
-        112
-      ],
-      "accounts": [
-        {
-          "name": "signer",
-          "signer": true
-        },
-        {
-          "name": "payer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "collection",
-          "writable": true
-        },
-        {
-          "name": "book"
-        },
-        {
-          "name": "asset",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "mplCoreProgram",
-          "address": "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"
-        },
-        {
-          "name": "systemProgram",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "createChapterAsset",
-      "discriminator": [
-        234,
-        23,
-        202,
-        174,
-        61,
-        95,
-        91,
-        195
-      ],
-      "accounts": [
-        {
-          "name": "signer",
-          "signer": true
-        },
-        {
-          "name": "payer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "collection",
-          "writable": true
-        },
-        {
-          "name": "book"
-        },
-        {
-          "name": "asset",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "mplCoreProgram",
-          "address": "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"
-        },
-        {
-          "name": "systemProgram",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": [
-        {
-          "name": "chapterIndex",
-          "type": "u64"
-        }
-      ]
-    },
-    {
       "name": "createUserCollection",
       "discriminator": [
         26,
@@ -261,8 +178,77 @@ export type Openshelf = {
           "signer": true
         },
         {
+          "name": "userNftAsset",
+          "writable": true,
+          "signer": true
+        },
+        {
           "name": "mplCoreProgram",
           "address": "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "university",
+          "type": {
+            "option": "string"
+          }
+        },
+        {
+          "name": "course",
+          "type": {
+            "option": "string"
+          }
+        }
+      ]
+    },
+    {
+      "name": "mintBookNft",
+      "discriminator": [
+        100,
+        177,
+        188,
+        33,
+        201,
+        32,
+        224,
+        103
+      ],
+      "accounts": [
+        {
+          "name": "book",
+          "writable": true
+        },
+        {
+          "name": "buyer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "author",
+          "writable": true
+        },
+        {
+          "name": "collection",
+          "writable": true
+        },
+        {
+          "name": "mplCoreProgram",
+          "address": "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"
+        },
+        {
+          "name": "bookNft",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "platform",
+          "writable": true,
+          "address": "6TRrKrkZENEVQyRmMc6NRgU1SYjWPRwQZqeVVmfr7vup"
         },
         {
           "name": "systemProgram",
@@ -298,8 +284,22 @@ export type Openshelf = {
           "writable": true
         },
         {
-          "name": "platform",
+          "name": "collection",
           "writable": true
+        },
+        {
+          "name": "mplCoreProgram",
+          "address": "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"
+        },
+        {
+          "name": "bookNft",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "platform",
+          "writable": true,
+          "address": "6TRrKrkZENEVQyRmMc6NRgU1SYjWPRwQZqeVVmfr7vup"
         },
         {
           "name": "systemProgram",
@@ -310,6 +310,69 @@ export type Openshelf = {
         {
           "name": "chapterIndex",
           "type": "u8"
+        },
+        {
+          "name": "needNft",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "purchaseChapterWithExistingNft",
+      "discriminator": [
+        35,
+        42,
+        226,
+        110,
+        233,
+        199,
+        85,
+        62
+      ],
+      "accounts": [
+        {
+          "name": "book",
+          "writable": true
+        },
+        {
+          "name": "buyer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "author",
+          "writable": true
+        },
+        {
+          "name": "collection",
+          "writable": true
+        },
+        {
+          "name": "mplCoreProgram",
+          "address": "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"
+        },
+        {
+          "name": "bookNft",
+          "writable": true
+        },
+        {
+          "name": "platform",
+          "writable": true,
+          "address": "6TRrKrkZENEVQyRmMc6NRgU1SYjWPRwQZqeVVmfr7vup"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "chapterIndex",
+          "type": "u8"
+        },
+        {
+          "name": "needNft",
+          "type": "bool"
         }
       ]
     },
@@ -340,15 +403,89 @@ export type Openshelf = {
           "writable": true
         },
         {
-          "name": "platform",
+          "name": "collection",
           "writable": true
+        },
+        {
+          "name": "mplCoreProgram",
+          "address": "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"
+        },
+        {
+          "name": "bookNft",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "platform",
+          "writable": true,
+          "address": "6TRrKrkZENEVQyRmMc6NRgU1SYjWPRwQZqeVVmfr7vup"
         },
         {
           "name": "systemProgram",
           "address": "11111111111111111111111111111111"
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "needNft",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "purchaseFullBookWithExistingNft",
+      "discriminator": [
+        212,
+        77,
+        238,
+        38,
+        13,
+        34,
+        173,
+        162
+      ],
+      "accounts": [
+        {
+          "name": "book",
+          "writable": true
+        },
+        {
+          "name": "buyer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "author",
+          "writable": true
+        },
+        {
+          "name": "collection",
+          "writable": true
+        },
+        {
+          "name": "mplCoreProgram",
+          "address": "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"
+        },
+        {
+          "name": "bookNft",
+          "writable": true
+        },
+        {
+          "name": "platform",
+          "writable": true,
+          "address": "6TRrKrkZENEVQyRmMc6NRgU1SYjWPRwQZqeVVmfr7vup"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "needNft",
+          "type": "bool"
+        }
+      ]
     },
     {
       "name": "stakeOnBook",
@@ -381,6 +518,51 @@ export type Openshelf = {
         {
           "name": "amount",
           "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "updateUserAttributesPlugin",
+      "discriminator": [
+        76,
+        42,
+        62,
+        22,
+        107,
+        93,
+        51,
+        146
+      ],
+      "accounts": [
+        {
+          "name": "signer",
+          "signer": true
+        },
+        {
+          "name": "userNftAsset",
+          "writable": true
+        },
+        {
+          "name": "mplCoreProgram",
+          "address": "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "university",
+          "type": {
+            "option": "string"
+          }
+        },
+        {
+          "name": "course",
+          "type": {
+            "option": "string"
+          }
         }
       ]
     }
@@ -431,18 +613,168 @@ export type Openshelf = {
     },
     {
       "code": 6003,
+      "name": "duplicateChapterIndex",
+      "msg": "Duplicate chapter index"
+    },
+    {
+      "code": 6004,
       "name": "insufficientFunds",
       "msg": "insufficientFunds"
     },
     {
-      "code": 6004,
+      "code": 6005,
       "name": "stakerNotFound",
       "msg": "Stake not found for this staker"
     },
     {
-      "code": 6005,
+      "code": 6006,
       "name": "noEarningsToClaim",
       "msg": "No rewards to claim"
+    },
+    {
+      "code": 6007,
+      "name": "noChapterAttribute",
+      "msg": "No chapter attribute was found"
+    },
+    {
+      "code": 6008,
+      "name": "invalidContextError",
+      "msg": "NO context was found in ContextWrapper"
+    },
+    {
+      "code": 6009,
+      "name": "bookNotPurchased",
+      "msg": "Book not purchased"
+    },
+    {
+      "code": 6010,
+      "name": "bookAlreadyPublished",
+      "msg": "Book is already published"
+    },
+    {
+      "code": 6011,
+      "name": "maxChaptersReached",
+      "msg": "Maximum number of chapters reached"
+    },
+    {
+      "code": 6012,
+      "name": "emptyChapterUrl",
+      "msg": "Chapter URL cannot be empty"
+    },
+    {
+      "code": 6013,
+      "name": "emptyChapterName",
+      "msg": "Chapter name cannot be empty"
+    },
+    {
+      "code": 6014,
+      "name": "chapterNameTooLong",
+      "msg": "Chapter name is too long"
+    },
+    {
+      "code": 6015,
+      "name": "invalidChapterPrice",
+      "msg": "Invalid chapter price"
+    },
+    {
+      "code": 6016,
+      "name": "chapterPriceTooHigh",
+      "msg": "Chapter price is too high"
+    },
+    {
+      "code": 6017,
+      "name": "arithmeticOverflow",
+      "msg": "Arithmetic overflow"
+    },
+    {
+      "code": 6018,
+      "name": "emptyBookTitle",
+      "msg": "Book title cannot be empty"
+    },
+    {
+      "code": 6019,
+      "name": "bookTitleTooLong",
+      "msg": "Book title is too long"
+    },
+    {
+      "code": 6020,
+      "name": "emptyBookDescription",
+      "msg": "Book description cannot be empty"
+    },
+    {
+      "code": 6021,
+      "name": "bookDescriptionTooLong",
+      "msg": "Book description is too long"
+    },
+    {
+      "code": 6022,
+      "name": "emptyBookGenre",
+      "msg": "Book genre cannot be empty"
+    },
+    {
+      "code": 6023,
+      "name": "bookGenreTooLong",
+      "msg": "Book genre is too long"
+    },
+    {
+      "code": 6024,
+      "name": "emptyImageUrl",
+      "msg": "Image URL cannot be empty"
+    },
+    {
+      "code": 6025,
+      "name": "imageUrlTooLong",
+      "msg": "Image URL is too long"
+    },
+    {
+      "code": 6026,
+      "name": "tooManyChapters",
+      "msg": "Too many chapters"
+    },
+    {
+      "code": 6027,
+      "name": "chapterUrlTooLong",
+      "msg": "Chapter URL is too long"
+    },
+    {
+      "code": 6028,
+      "name": "nonContinuousChapterIndices",
+      "msg": "Chapter indices must be continuous"
+    },
+    {
+      "code": 6029,
+      "name": "bookNotPublished",
+      "msg": "Book is not published"
+    },
+    {
+      "code": 6030,
+      "name": "invalidPrice",
+      "msg": "Invalid price"
+    },
+    {
+      "code": 6031,
+      "name": "noStakers",
+      "msg": "No stakers available"
+    },
+    {
+      "code": 6032,
+      "name": "invalidStakeAmount",
+      "msg": "Invalid stake amount"
+    },
+    {
+      "code": 6033,
+      "name": "stakeAmountTooHigh",
+      "msg": "Stake amount is too high"
+    },
+    {
+      "code": 6034,
+      "name": "maxStakersReached",
+      "msg": "Maximum number of stakers reached"
+    },
+    {
+      "code": 6035,
+      "name": "invalidTransactionId",
+      "msg": "Invalid transaction ID"
     }
   ],
   "types": [
@@ -571,6 +903,30 @@ export type Openshelf = {
       }
     },
     {
+      "name": "chapterInput",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "url",
+            "type": "string"
+          },
+          {
+            "name": "index",
+            "type": "u8"
+          },
+          {
+            "name": "price",
+            "type": "u64"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
       "name": "key",
       "type": {
         "kind": "enum",
@@ -635,6 +991,10 @@ export type Openshelf = {
           },
           {
             "name": "earnings",
+            "type": "u64"
+          },
+          {
+            "name": "totalEarning",
             "type": "u64"
           }
         ]

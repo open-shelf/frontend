@@ -1,0 +1,998 @@
+{
+  "address": "FYumxk5wR7RWKa8M71hzJbiExSpi3AgAgteah1xqH6kD",
+  "metadata": {
+    "name": "openshelf",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "instructions": [
+    {
+      "name": "add_book",
+      "discriminator": [
+        181,
+        117,
+        249,
+        173,
+        108,
+        163,
+        209,
+        238
+      ],
+      "accounts": [
+        {
+          "name": "book",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "author",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "name": "description",
+          "type": "string"
+        },
+        {
+          "name": "genre",
+          "type": "string"
+        },
+        {
+          "name": "image",
+          "type": "string"
+        },
+        {
+          "name": "chapters",
+          "type": {
+            "option": {
+              "vec": {
+                "defined": {
+                  "name": "ChapterInput"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "add_chapter",
+      "discriminator": [
+        70,
+        219,
+        222,
+        77,
+        39,
+        136,
+        132,
+        233
+      ],
+      "accounts": [
+        {
+          "name": "book",
+          "writable": true
+        },
+        {
+          "name": "author",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "book"
+          ]
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "chapter_url",
+          "type": "string"
+        },
+        {
+          "name": "chapter_index",
+          "type": "u8"
+        },
+        {
+          "name": "price",
+          "type": "u64"
+        },
+        {
+          "name": "name",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "claim_staker_earnings",
+      "discriminator": [
+        117,
+        245,
+        169,
+        16,
+        136,
+        196,
+        36,
+        84
+      ],
+      "accounts": [
+        {
+          "name": "book",
+          "writable": true
+        },
+        {
+          "name": "staker",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "create_user_collection",
+      "discriminator": [
+        26,
+        51,
+        177,
+        244,
+        95,
+        195,
+        81,
+        131
+      ],
+      "accounts": [
+        {
+          "name": "signer",
+          "signer": true
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "collection",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user_nft_asset",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "mpl_core_program",
+          "address": "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "university",
+          "type": {
+            "option": "string"
+          }
+        },
+        {
+          "name": "course",
+          "type": {
+            "option": "string"
+          }
+        }
+      ]
+    },
+    {
+      "name": "mint_book_nft",
+      "discriminator": [
+        100,
+        177,
+        188,
+        33,
+        201,
+        32,
+        224,
+        103
+      ],
+      "accounts": [
+        {
+          "name": "book",
+          "writable": true
+        },
+        {
+          "name": "buyer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "author",
+          "writable": true
+        },
+        {
+          "name": "collection",
+          "writable": true
+        },
+        {
+          "name": "mpl_core_program",
+          "address": "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"
+        },
+        {
+          "name": "book_nft",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "platform",
+          "writable": true,
+          "address": "6TRrKrkZENEVQyRmMc6NRgU1SYjWPRwQZqeVVmfr7vup"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "purchase_chapter",
+      "discriminator": [
+        123,
+        139,
+        195,
+        216,
+        156,
+        158,
+        134,
+        67
+      ],
+      "accounts": [
+        {
+          "name": "book",
+          "writable": true
+        },
+        {
+          "name": "buyer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "author",
+          "writable": true
+        },
+        {
+          "name": "collection",
+          "writable": true
+        },
+        {
+          "name": "mpl_core_program",
+          "address": "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"
+        },
+        {
+          "name": "book_nft",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "platform",
+          "writable": true,
+          "address": "6TRrKrkZENEVQyRmMc6NRgU1SYjWPRwQZqeVVmfr7vup"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "chapter_index",
+          "type": "u8"
+        },
+        {
+          "name": "need_nft",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "purchase_chapter_with_existing_nft",
+      "discriminator": [
+        35,
+        42,
+        226,
+        110,
+        233,
+        199,
+        85,
+        62
+      ],
+      "accounts": [
+        {
+          "name": "book",
+          "writable": true
+        },
+        {
+          "name": "buyer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "author",
+          "writable": true
+        },
+        {
+          "name": "collection",
+          "writable": true
+        },
+        {
+          "name": "mpl_core_program",
+          "address": "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"
+        },
+        {
+          "name": "book_nft",
+          "writable": true
+        },
+        {
+          "name": "platform",
+          "writable": true,
+          "address": "6TRrKrkZENEVQyRmMc6NRgU1SYjWPRwQZqeVVmfr7vup"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "chapter_index",
+          "type": "u8"
+        },
+        {
+          "name": "need_nft",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "purchase_full_book",
+      "discriminator": [
+        114,
+        134,
+        89,
+        208,
+        117,
+        183,
+        37,
+        232
+      ],
+      "accounts": [
+        {
+          "name": "book",
+          "writable": true
+        },
+        {
+          "name": "buyer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "author",
+          "writable": true
+        },
+        {
+          "name": "collection",
+          "writable": true
+        },
+        {
+          "name": "mpl_core_program",
+          "address": "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"
+        },
+        {
+          "name": "book_nft",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "platform",
+          "writable": true,
+          "address": "6TRrKrkZENEVQyRmMc6NRgU1SYjWPRwQZqeVVmfr7vup"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "need_nft",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "purchase_full_book_with_existing_nft",
+      "discriminator": [
+        212,
+        77,
+        238,
+        38,
+        13,
+        34,
+        173,
+        162
+      ],
+      "accounts": [
+        {
+          "name": "book",
+          "writable": true
+        },
+        {
+          "name": "buyer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "author",
+          "writable": true
+        },
+        {
+          "name": "collection",
+          "writable": true
+        },
+        {
+          "name": "mpl_core_program",
+          "address": "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"
+        },
+        {
+          "name": "book_nft",
+          "writable": true
+        },
+        {
+          "name": "platform",
+          "writable": true,
+          "address": "6TRrKrkZENEVQyRmMc6NRgU1SYjWPRwQZqeVVmfr7vup"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "need_nft",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "stake_on_book",
+      "discriminator": [
+        63,
+        5,
+        158,
+        206,
+        162,
+        224,
+        240,
+        1
+      ],
+      "accounts": [
+        {
+          "name": "book",
+          "writable": true
+        },
+        {
+          "name": "staker",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "update_user_attributes_plugin",
+      "discriminator": [
+        76,
+        42,
+        62,
+        22,
+        107,
+        93,
+        51,
+        146
+      ],
+      "accounts": [
+        {
+          "name": "signer",
+          "signer": true
+        },
+        {
+          "name": "user_nft_asset",
+          "writable": true
+        },
+        {
+          "name": "mpl_core_program",
+          "address": "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "university",
+          "type": {
+            "option": "string"
+          }
+        },
+        {
+          "name": "course",
+          "type": {
+            "option": "string"
+          }
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "BaseCollectionV1",
+      "discriminator": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "Book",
+      "discriminator": [
+        121,
+        34,
+        121,
+        35,
+        91,
+        62,
+        85,
+        222
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "AlreadyPurchased",
+      "msg": "You have already purchased this chapter or book"
+    },
+    {
+      "code": 6001,
+      "name": "NotQualifiedForStaking",
+      "msg": "You must purchase all chapters or the full book before staking"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidChapterIndex",
+      "msg": "Invalid chapter index"
+    },
+    {
+      "code": 6003,
+      "name": "DuplicateChapterIndex",
+      "msg": "Duplicate chapter index"
+    },
+    {
+      "code": 6004,
+      "name": "InsufficientFunds",
+      "msg": "InsufficientFunds"
+    },
+    {
+      "code": 6005,
+      "name": "StakerNotFound",
+      "msg": "Stake not found for this staker"
+    },
+    {
+      "code": 6006,
+      "name": "NoEarningsToClaim",
+      "msg": "No rewards to claim"
+    },
+    {
+      "code": 6007,
+      "name": "NoChapterAttribute",
+      "msg": "No chapter attribute was found"
+    },
+    {
+      "code": 6008,
+      "name": "InvalidContextError",
+      "msg": "NO context was found in ContextWrapper"
+    },
+    {
+      "code": 6009,
+      "name": "BookNotPurchased",
+      "msg": "Book not purchased"
+    },
+    {
+      "code": 6010,
+      "name": "BookAlreadyPublished",
+      "msg": "Book is already published"
+    },
+    {
+      "code": 6011,
+      "name": "MaxChaptersReached",
+      "msg": "Maximum number of chapters reached"
+    },
+    {
+      "code": 6012,
+      "name": "EmptyChapterUrl",
+      "msg": "Chapter URL cannot be empty"
+    },
+    {
+      "code": 6013,
+      "name": "EmptyChapterName",
+      "msg": "Chapter name cannot be empty"
+    },
+    {
+      "code": 6014,
+      "name": "ChapterNameTooLong",
+      "msg": "Chapter name is too long"
+    },
+    {
+      "code": 6015,
+      "name": "InvalidChapterPrice",
+      "msg": "Invalid chapter price"
+    },
+    {
+      "code": 6016,
+      "name": "ChapterPriceTooHigh",
+      "msg": "Chapter price is too high"
+    },
+    {
+      "code": 6017,
+      "name": "ArithmeticOverflow",
+      "msg": "Arithmetic overflow"
+    },
+    {
+      "code": 6018,
+      "name": "EmptyBookTitle",
+      "msg": "Book title cannot be empty"
+    },
+    {
+      "code": 6019,
+      "name": "BookTitleTooLong",
+      "msg": "Book title is too long"
+    },
+    {
+      "code": 6020,
+      "name": "EmptyBookDescription",
+      "msg": "Book description cannot be empty"
+    },
+    {
+      "code": 6021,
+      "name": "BookDescriptionTooLong",
+      "msg": "Book description is too long"
+    },
+    {
+      "code": 6022,
+      "name": "EmptyBookGenre",
+      "msg": "Book genre cannot be empty"
+    },
+    {
+      "code": 6023,
+      "name": "BookGenreTooLong",
+      "msg": "Book genre is too long"
+    },
+    {
+      "code": 6024,
+      "name": "EmptyImageUrl",
+      "msg": "Image URL cannot be empty"
+    },
+    {
+      "code": 6025,
+      "name": "ImageUrlTooLong",
+      "msg": "Image URL is too long"
+    },
+    {
+      "code": 6026,
+      "name": "TooManyChapters",
+      "msg": "Too many chapters"
+    },
+    {
+      "code": 6027,
+      "name": "ChapterUrlTooLong",
+      "msg": "Chapter URL is too long"
+    },
+    {
+      "code": 6028,
+      "name": "NonContinuousChapterIndices",
+      "msg": "Chapter indices must be continuous"
+    },
+    {
+      "code": 6029,
+      "name": "BookNotPublished",
+      "msg": "Book is not published"
+    },
+    {
+      "code": 6030,
+      "name": "InvalidPrice",
+      "msg": "Invalid price"
+    },
+    {
+      "code": 6031,
+      "name": "NoStakers",
+      "msg": "No stakers available"
+    },
+    {
+      "code": 6032,
+      "name": "InvalidStakeAmount",
+      "msg": "Invalid stake amount"
+    },
+    {
+      "code": 6033,
+      "name": "StakeAmountTooHigh",
+      "msg": "Stake amount is too high"
+    },
+    {
+      "code": 6034,
+      "name": "MaxStakersReached",
+      "msg": "Maximum number of stakers reached"
+    },
+    {
+      "code": 6035,
+      "name": "InvalidTransactionId",
+      "msg": "Invalid transaction ID"
+    }
+  ],
+  "types": [
+    {
+      "name": "BaseCollectionV1",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "key",
+            "type": {
+              "defined": {
+                "name": "Key"
+              }
+            }
+          },
+          {
+            "name": "update_authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "uri",
+            "type": "string"
+          },
+          {
+            "name": "num_minted",
+            "type": "u32"
+          },
+          {
+            "name": "current_size",
+            "type": "u32"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Book",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "author",
+            "type": "pubkey"
+          },
+          {
+            "name": "title",
+            "type": "string"
+          },
+          {
+            "name": "metadata",
+            "type": {
+              "defined": {
+                "name": "MetaData"
+              }
+            }
+          },
+          {
+            "name": "full_book_price",
+            "type": "u64"
+          },
+          {
+            "name": "total_stake",
+            "type": "u64"
+          },
+          {
+            "name": "chapters",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "Chapter"
+                }
+              }
+            }
+          },
+          {
+            "name": "stakes",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "Stake"
+                }
+              }
+            }
+          },
+          {
+            "name": "readers",
+            "type": {
+              "vec": "pubkey"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Chapter",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "price",
+            "type": "u64"
+          },
+          {
+            "name": "url",
+            "type": "string"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "index",
+            "type": "u8"
+          },
+          {
+            "name": "readers",
+            "type": {
+              "vec": "pubkey"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ChapterInput",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "url",
+            "type": "string"
+          },
+          {
+            "name": "index",
+            "type": "u8"
+          },
+          {
+            "name": "price",
+            "type": "u64"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Key",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Uninitialized"
+          },
+          {
+            "name": "AssetV1"
+          },
+          {
+            "name": "HashedAssetV1"
+          },
+          {
+            "name": "PluginHeaderV1"
+          },
+          {
+            "name": "PluginRegistryV1"
+          },
+          {
+            "name": "CollectionV1"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MetaData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "description",
+            "type": "string"
+          },
+          {
+            "name": "publish_date",
+            "type": "i64"
+          },
+          {
+            "name": "genre",
+            "type": "string"
+          },
+          {
+            "name": "image_url",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Stake",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "staker",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "earnings",
+            "type": "u64"
+          },
+          {
+            "name": "total_earning",
+            "type": "u64"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -26,6 +26,10 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ bookPubKey }) => {
   const [pageNumber, setPageNumber] = useState(1);
   const [scale, setScale] = useState(1.7);
   const [isSideBySide, setIsSideBySide] = useState(false);
+  const [collection, setCollection] = useState<any>(null);
+  const [userCollectionKey, setUserCollectionKey] = useState<string | null>(
+    null
+  );
 
   const handleScaleUpdate = (newScale: number) => {
     setScale(newScale);
@@ -42,6 +46,36 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ bookPubKey }) => {
   const toggleSideBySide = () => {
     setIsSideBySide((prev) => !prev);
   };
+
+  useEffect(() => {
+    const fetchUserCollectionKeyAndCache = async () => {
+      if (wallet.connected && connection && wallet.publicKey) {
+        try {
+          const programUtils = new ProgramUtils(connection, wallet);
+          const fetchedCollectionKey =
+            await programUtils.fetchUserCollectionKey();
+
+          // Store the user's collection key in localStorage
+          localStorage.setItem("userCollectionKey", fetchedCollectionKey);
+
+          setUserCollectionKey(fetchedCollectionKey);
+        } catch (error) {
+          console.error("Error fetching user collection key:", error);
+          setError(
+            "Failed to load user collection key. Please try again later."
+          );
+        }
+      }
+    };
+
+    // Check if user collection key is already in cache
+    const cachedCollectionKey = localStorage.getItem("userCollectionKey");
+    if (cachedCollectionKey) {
+      setUserCollectionKey(cachedCollectionKey);
+    } else {
+      fetchUserCollectionKeyAndCache();
+    }
+  }, [wallet.connected, connection, wallet.publicKey]);
 
   useEffect(() => {
     const fetchBookDetails = async () => {

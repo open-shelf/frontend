@@ -116,7 +116,7 @@ export class ProgramUtils implements IProgramUtils {
     if (this.collectionPubKey) return;
 
     try {
-      const collectionKey = await this.fetchUserCollectionKey();
+      const collectionKey = await this.fetchUserCollectionKeyCache();
       if (collectionKey) {
         this.collectionPubKey = new PublicKey(collectionKey);
         console.log("Collection public key set:", this.collectionPubKey.toString());
@@ -578,6 +578,20 @@ export class ProgramUtils implements IProgramUtils {
     console.log("assetsByCollection", assetsByCollection);
 
     return assetsByCollection;
+  }
+
+  async fetchUserCollectionKeyCache(): Promise<string> {
+    const cachedCollectionKey = localStorage.getItem("userCollectionKey");
+    if (cachedCollectionKey) {
+      console.log("Fetched from cache: ", localStorage.getItem("userCollectionKey"));
+      return cachedCollectionKey;
+    } else {
+          const userCollectionKey = await this.fetchUserCollectionKey();
+          // Store the user's collection key in localStorage
+          localStorage.setItem("userCollectionKey", userCollectionKey);
+          console.log("Set pub key in cache: ", localStorage.getItem("userCollectionKey"));
+          return userCollectionKey;
+    }
   }
 
   /**

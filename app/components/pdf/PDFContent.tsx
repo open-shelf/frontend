@@ -68,7 +68,7 @@ const PDFContent: React.FC<PDFContentProps> = ({
     !bookDetails.userOwnership.chaptersPurchased.includes(selectedChapter.index)
   ) {
     return (
-      <div className={styles.instructions}>
+      <div className={`${styles.instructions} ${styles.centered}`}>
         {selectedChapter &&
         !bookDetails.userOwnership.chaptersPurchased.includes(
           selectedChapter.index

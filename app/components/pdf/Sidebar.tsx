@@ -46,6 +46,9 @@ const Sidebar: React.FC<SidebarProps> = ({
       const bookPubKey = new PublicKey(bookDetails.bookPubKey);
       const authorPubKey = new PublicKey(bookDetails.author);
 
+      await programUtils.initializeCollectionPubKey();
+      console.log("programUtils:::: ", programUtils.collectionPubKey);
+
       const tx = await programUtils.purchaseChapter(
         bookPubKey,
         authorPubKey,

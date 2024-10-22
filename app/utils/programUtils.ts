@@ -403,8 +403,8 @@ export class ProgramUtils implements IProgramUtils {
 
     try {
       const method = existingBookNftAddress
-        ? this.program.methods.purchaseFullBookWithExistingNft(true)
-        : this.program.methods.purchaseFullBook(true);
+        ? this.program.methods.purchaseFullBookWithExistingNft(needNFT)
+        : this.program.methods.purchaseFullBook(needNFT);
 
       const tx = await method
         .accounts({

@@ -1,6 +1,6 @@
 import SearchBar from "./SearchBar";
-import MyBookLibrary from "./MyBookLibrary";
-import StoreBook from "./StoreBook";
+import UserLibrary from "./UserLibrary";
+import BookstoreShelf from "./BookstoreShelf";
 import { BookProvider } from "./BookContext";
 
 export default function MainContent() {
@@ -12,8 +12,8 @@ export default function MainContent() {
             <SearchBar />
           </div>
           <div className="p-6 space-y-6">
-            <MyBookLibrary />
-            <StoreBook />
+            <UserLibrary />
+            <BookstoreShelf />
           </div>
         </main>
       </div>

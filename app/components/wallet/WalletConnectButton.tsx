@@ -74,10 +74,15 @@ const WalletConnectButton = () => {
       }
     };
 
+    console.log("Wallet connection status: ", connected);
     if (connected) {
+      console.log("Connecting wallet");
       fetchBalance();
     } else {
       setBalance(null);
+      // Remove userCollectionKey from localStorage when wallet is disconnected
+      console.log("Removing from cache");
+      localStorage.removeItem("userCollectionKey");
     }
 
     // Add custom option to the wallet dropdown

@@ -71,7 +71,7 @@ export default function StakePopup({
         );
         console.log(`Staked on book. Transaction: ${tx}`);
 
-        await new Promise((f) => setTimeout(f, 5000));
+        await new Promise((f) => setTimeout(f, 2000));
 
         const updatedBookInfo = await programUtils.fetchBook(bookPubKeyObj);
 
@@ -107,7 +107,7 @@ export default function StakePopup({
         const tx = await programUtils.claimStakeEarnings(bookPubKeyObj);
         console.log(`Earning claimed. Transaction: ${tx}`);
 
-        await new Promise((f) => setTimeout(f, 5000));
+        await new Promise((f) => setTimeout(f, 2000));
 
         const updatedBookInfo = await programUtils.fetchBook(bookPubKeyObj);
 

@@ -83,11 +83,12 @@ export default function BookDetailsPopup({
       console.log("Attempting to purchase full book...");
       const tx = await programUtils.purchaseFullBook(
         bookPubKeyObj,
-        authorPubKeyObj
+        authorPubKeyObj,
+        true
       );
       console.log("Full book purchase transaction:", tx);
 
-      await new Promise((f) => setTimeout(f, 5000));
+      await new Promise((f) => setTimeout(f, 2000));
 
       console.log("Fetching updated book info...");
       const updatedBookInfo = await programUtils.fetchBook(bookPubKeyObj);

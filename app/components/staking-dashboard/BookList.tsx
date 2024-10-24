@@ -38,7 +38,7 @@ const BookList: React.FC<BookListProps> = ({
       } catch (error) {
         console.error("Error claiming reward:", error);
         setErrorMessage("Failed to claim reward. Please try again.");
-        setTimeout(() => setErrorMessage(null), 5000);
+        setTimeout(() => setErrorMessage(null), 2000);
       }
     }
   };

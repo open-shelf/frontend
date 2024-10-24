@@ -415,7 +415,7 @@ const PDFViewer = () => {
         );
         console.log(`Staked on book. Transaction: ${tx}`);
 
-        await new Promise((f) => setTimeout(f, 5000));
+        await new Promise((f) => setTimeout(f, 2000));
 
         // Fetch updated book info
         const updatedBookInfo = await programUtils.fetchBook(bookPubKey);
@@ -466,7 +466,7 @@ const PDFViewer = () => {
         const tx = await programUtils.claimStakeEarnings(bookPubKey);
         console.log(`Earning claimed. Transaction: ${tx}`);
 
-        await new Promise((f) => setTimeout(f, 5000));
+        await new Promise((f) => setTimeout(f, 2000));
 
         // Fetch updated book info
         const updatedBookInfo = await programUtils.fetchBook(bookPubKey);
@@ -515,7 +515,7 @@ const PDFViewer = () => {
     if (error) {
       const timer = setTimeout(() => {
         setError(null);
-      }, 5000); // Error message will disappear after 5 seconds
+      }, 2000); // Error message will disappear after 5 seconds
 
       return () => clearTimeout(timer);
     }
